@@ -6,64 +6,130 @@
 <title>Swimming Pool Chemical Calculator</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 20px;
-    background: #f4f6fa;
-    color: #222;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
   }
-  h1 { margin-bottom: 10px; }
+  h1 {
+    margin-bottom: 20px;
+    color: white;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    font-size: 2.5rem;
+  }
+  .pool-selector {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .pool-selector label {
+    color: white;
+    font-size: 1.2rem;
+    margin-right: 10px;
+    font-weight: 500;
+  }
+  .pool-selector select {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .pool-selector select:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .pool-selector select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+  }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
     margin-top: 20px;
   }
   .card {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
   }
   .card h2 {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     margin-top: 0;
+    margin-bottom: 20px;
+    color: #4a5568;
+    text-align: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
   }
   label {
     display: block;
-    margin: 6px 0 2px;
-    font-size: 0.9rem;
-    color: #333;
+    margin: 10px 0 5px;
+    font-size: 0.95rem;
+    color: #4a5568;
+    font-weight: 500;
   }
   input {
     width: 100%;
-    padding: 6px 8px;
+    padding: 12px 15px;
     font-size: 1rem;
-    border: 1px solid #bbb;
-    border-radius: 6px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+  input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
   .result {
-    margin-top: 10px;
-    padding: 10px;
-    background: #eef6ff;
-    border: 1px solid #bcd;
-    border-radius: 6px;
-    font-weight: bold;
+    margin-top: 15px;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
 </style>
 </head>
 <body>
 
 <h1>Swimming Pool Chemical Calculator</h1>
-<p>Enter pool volume and current/target readings. Results update automatically using the same formulas as your spreadsheet.</p>
+<p>Enter current/target readings. Results update automatically using the same formulas as your spreadsheet.</p>
+
+<div class="pool-selector">
+  <label for="poolSelect">Select Pool:</label>
+  <select id="poolSelect">
+    <option value="660000">Main Pool (660,000 L)</option>
+    <option value="76000">Leisure Pool (76,000 L)</option>
+    <option value="12000">Spa (12,000 L)</option>
+  </select>
+</div>
 
 <div class="grid">
 
   <div class="card">
     <h2>Increase Alkalinity</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volTA" value="660000">
     <label>Current Alkalinity (ppm)</label>
     <input type="number" id="taNow" value="23">
     <label>Target Alkalinity (ppm)</label>
@@ -73,8 +139,6 @@
 
   <div class="card">
     <h2>Decrease Alkalinity</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volTAdec" value="76000">
     <label>Current Alkalinity (ppm)</label>
     <input type="number" id="taNowDec" value="134">
     <label>Target Alkalinity (ppm)</label>
@@ -84,8 +148,6 @@
 
   <div class="card">
     <h2>Increase Free Chlorine</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volFC" value="15000">
     <label>Current Free Chlorine (ppm)</label>
     <input type="number" id="fcNow" value="0">
     <label>Target Free Chlorine (ppm)</label>
@@ -95,8 +157,6 @@
 
   <div class="card">
     <h2>Decrease Free Chlorine</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volFCdec" value="12000">
     <label>Current Free Chlorine (ppm)</label>
     <input type="number" id="fcNowDec" value="10">
     <label>Target Free Chlorine (ppm)</label>
@@ -106,8 +166,6 @@
 
   <div class="card">
     <h2>Increase Isocyanuric Acid (CYA)</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volCya" value="440000">
     <label>Current CYA (ppm)</label>
     <input type="number" id="cyaNow" value="9">
     <label>Target CYA (ppm)</label>
@@ -117,8 +175,6 @@
 
   <div class="card">
     <h2>Decrease pH</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volPhDec" value="15000">
     <label>Current pH</label>
     <input type="number" id="phNowDec" value="7.92">
     <label>Target pH</label>
@@ -128,8 +184,6 @@
 
   <div class="card">
     <h2>Increase pH</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volPhInc" value="12000">
     <label>Current pH</label>
     <input type="number" id="phNowInc" value="7.12">
     <label>Target pH</label>
@@ -139,8 +193,6 @@
 
   <div class="card">
     <h2>Increase Calcium</h2>
-    <label>Pool Volume (L)</label>
-    <input type="number" id="volCa" value="440000">
     <label>Current Calcium (mg/L)</label>
     <input type="number" id="caNow" value="0.3">
     <label>Target Calcium (mg/L)</label>
@@ -151,52 +203,60 @@
 </div>
 
 <script>
+let poolVolume = 660000; // Default to Main Pool
+
 function update() {
   const f = (val, dec=3) => Number(val).toFixed(dec);
 
   // Increase Alkalinity
   let ta = ( (document.getElementById("taTarget").value - document.getElementById("taNow").value) / 1e6 ) *
-            document.getElementById("volTA").value * 2;
+            poolVolume * 2;
   document.getElementById("taResult").innerText = f(ta) + " kg Sodium Bicarbonate";
 
   // Decrease Alkalinity
   let taDec = ( (document.getElementById("taTargetDec").value - document.getElementById("taNowDec").value) / 1e6 ) *
-              document.getElementById("volTAdec").value * 2;
+              poolVolume * 2;
   document.getElementById("taDecResult").innerText = f(Math.abs(taDec)) + " L Hydrochloric Acid (33%)";
 
   // Increase Free Chlorine
   let fc = ( (document.getElementById("fcTarget").value - document.getElementById("fcNow").value) / 1e6 ) *
-            document.getElementById("volFC").value * 8;
+            poolVolume * 8;
   document.getElementById("fcResult").innerText = f(fc) + " L Sodium Hypochlorite (12.5%)";
 
   // Decrease Free Chlorine
   let fcDec = ( (document.getElementById("fcNowDec").value - document.getElementById("fcTargetDec").value) / 1e6 ) *
-              document.getElementById("volFCdec").value * 1;
+              poolVolume * 1;
   document.getElementById("fcDecResult").innerText = f(fcDec) + " kg Sodium Thiosulphate";
 
   // Increase CYA
   let cya = ( (document.getElementById("cyaTarget").value - document.getElementById("cyaNow").value) / 1e6 ) *
-            document.getElementById("volCya").value * 1;
+            poolVolume * 1;
   document.getElementById("cyaResult").innerText = f(cya) + " kg Isocyanuric Acid";
 
   // Decrease pH
   let phDec = ( (document.getElementById("phNowDec").value - document.getElementById("phTargetDec").value) / 1e6 ) *
-              document.getElementById("volPhDec").value * 96;
+              poolVolume * 96;
   document.getElementById("phDecResult").innerText = f(phDec) + " kg Sodium Bisulphate or " +
     f(phDec * 0.833) + " L Hydrochloric Acid (33%)";
 
   // Increase pH
   let phInc = ( (document.getElementById("phTargetInc").value - document.getElementById("phNowInc").value) / 1e6 ) *
-              document.getElementById("volPhInc").value * 800;
+              poolVolume * 800;
   document.getElementById("phIncResult").innerText = f(phInc) + " kg Sodium Bicarbonate or " +
     f(phInc/2) + " kg Sodium Carbonate";
 
   // Increase Calcium
   let ca = ( (document.getElementById("caTarget").value - document.getElementById("caNow").value) / 1e6 ) *
-            document.getElementById("volCa").value * 1.1;
+            poolVolume * 1.1;
   document.getElementById("caResult").innerText = f(ca) + " kg Calcium Chloride";
 }
 
+function updatePoolVolume() {
+  poolVolume = parseInt(document.getElementById("poolSelect").value);
+  update();
+}
+
+document.getElementById("poolSelect").addEventListener("change", updatePoolVolume);
 document.querySelectorAll("input").forEach(el => el.addEventListener("input", update));
 update();
 </script>
