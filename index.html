@@ -3,305 +3,816 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Swimming Pool Chemical Calculator</title>
+<title>Pool Chemistry Calculator</title>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  :root {
+    --primary: #0891b2;
+    --primary-dark: #0e7490;
+    --primary-light: #22d3ee;
+    --secondary: #06b6d4;
+    --accent: #f0fdfa;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --bg-gradient: linear-gradient(135deg, #0c4a6e 0%, #164e63 50%, #134e4a 100%);
+    --card-bg: rgba(255, 255, 255, 0.97);
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+
+  * {
+    box-sizing: border-box;
     margin: 0;
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--bg-gradient);
     min-height: 100vh;
-    color: #333;
+    color: var(--text-primary);
+    line-height: 1.6;
   }
-  h1 {
-    margin-bottom: 20px;
+
+  /* Header */
+  .header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .logo-text h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
     color: white;
-    text-align: center;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    font-size: 2.5rem;
+    letter-spacing: -0.02em;
   }
+
+  .logo-text span {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+  }
+
+  /* Pool Selector */
   .pool-selector {
-    text-align: center;
-    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
   }
+
   .pool-selector label {
-    color: white;
-    font-size: 1.2rem;
-    margin-right: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
     font-weight: 500;
   }
+
+  .select-wrapper {
+    position: relative;
+  }
+
   .pool-selector select {
-    padding: 12px 20px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 25px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
+    appearance: none;
+    padding: 10px 40px 10px 16px;
+    font-size: 0.95rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    font-weight: 500;
+    min-width: 220px;
   }
+
   .pool-selector select:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.3);
   }
+
   .pool-selector select:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
   }
+
+  .pool-selector select option {
+    background: var(--text-primary);
+    color: white;
+  }
+
+  .select-wrapper::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+  }
+
   .custom-volume {
     display: none;
-    margin-top: 15px;
+    align-items: center;
+    gap: 8px;
   }
+
   .custom-volume.show {
-    display: block;
+    display: flex;
   }
+
   .custom-volume input {
-    padding: 12px 20px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 25px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    width: 200px;
-    text-align: center;
-  }
-  .custom-volume label {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.15);
     color: white;
-    font-size: 1rem;
-    margin-right: 10px;
-  }
-  .reference-table {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 15px;
-    padding: 20px;
-    margin: 0 auto 30px auto;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  }
-  .reference-table h3 {
-    margin: 0 0 15px 0;
-    color: #4a5568;
+    width: 140px;
     text-align: center;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 10px;
+    font-weight: 500;
   }
+
+  .custom-volume input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .custom-volume input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
+  }
+
+  .custom-volume label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+  }
+
+  /* Main Content */
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Reference Section */
+  .reference-section {
+    margin-bottom: 40px;
+  }
+
+  .reference-table {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    max-width: 600px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .reference-table h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .reference-table h3::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    border-radius: 2px;
+  }
+
   .reference-table table {
     width: 100%;
     border-collapse: collapse;
   }
+
   .reference-table th,
   .reference-table td {
-    padding: 10px 15px;
+    padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
   }
+
   .reference-table th {
-    color: #667eea;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
     font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
+
+  .reference-table th:first-child {
+    border-radius: var(--radius-sm) 0 0 0;
+  }
+
+  .reference-table th:last-child {
+    border-radius: 0 var(--radius-sm) 0 0;
+    text-align: right;
+  }
+
   .reference-table td {
-    color: #4a5568;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
   }
+
   .reference-table tr:last-child td {
     border-bottom: none;
   }
+
   .reference-table td:last-child {
     text-align: right;
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--primary-dark);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
   }
+
+  .reference-table tr:hover td {
+    background: var(--accent);
+  }
+
+  /* Section Headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .section-header h2 {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  /* Grid Layout */
+  .calculations-section {
+    margin-bottom: 48px;
+  }
+
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 25px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
   }
+
+  /* Cards */
   .card {
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
   }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+
   .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
   }
-  .card h2 {
-    font-size: 1.3rem;
-    margin-top: 0;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
-    color: #4a5568;
-    text-align: center;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
   }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .card-icon.increase {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+  }
+
+  .card-icon.decrease {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+  }
+
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .card-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Form Elements */
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
   label {
     display: block;
-    margin: 10px 0 5px;
-    font-size: 0.95rem;
-    color: #4a5568;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
     font-weight: 500;
   }
-  input {
+
+  input[type="number"] {
     width: 100%;
-    padding: 12px 15px;
+    padding: 12px 14px;
     font-size: 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    background: #f8fafc;
+    color: var(--text-primary);
+    font-weight: 500;
   }
-  input:focus {
+
+  input[type="number"]:hover {
+    border-color: #cbd5e1;
+  }
+
+  input[type="number"]:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
   }
+
+  /* Result Display */
   .result {
-    margin-top: 15px;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
-    border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
     text-align: center;
-    font-size: 1.1rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-size: 1.05rem;
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    100% { left: 100%; }
+  }
+
+  /* Footer */
+  .footer {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 24px;
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .footer p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+  }
+
+  .footer a {
+    color: var(--primary-light);
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .pool-selector {
+      width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .pool-selector select {
+      width: 100%;
+    }
+
+    .custom-volume {
+      width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .custom-volume input {
+      width: 100%;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .input-row {
+      grid-template-columns: 1fr;
+    }
+
+    .main {
+      padding: 20px 16px;
+    }
+
+    .logo-text h1 {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .card {
+      padding: 20px;
+    }
+
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .result {
+      font-size: 0.95rem;
+      padding: 14px 16px;
+    }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
   }
 </style>
 </head>
 <body>
 
-<h1>Swimming Pool Chemical Calculator</h1>
-<p>Enter current/target readings. Results update automatically using the same formulas as your spreadsheet.</p>
+<header class="header">
+  <div class="header-content">
+    <div class="logo">
+      <div class="logo-icon">&#x1F30A;</div>
+      <div class="logo-text">
+        <h1>Pool Chemistry</h1>
+        <span>Chemical Calculator</span>
+      </div>
+    </div>
 
-<div class="pool-selector">
-  <label for="poolSelect">Select Pool:</label>
-  <select id="poolSelect">
-    <option value="660000">Main Pool (660,000 L)</option>
-    <option value="76000">Leisure Pool (76,000 L)</option>
-    <option value="12000">Spa (12,000 L)</option>
-    <option value="440000">Main Pool - Crib Point (440,000 L)</option>
-    <option value="15000">Leisure Pool - Crib Point (15,000 L)</option>
-    <option value="custom">Custom Volume...</option>
-  </select>
-  <div class="custom-volume" id="customVolumeContainer">
-    <label for="customVolume">Enter Volume (L):</label>
-    <input type="number" id="customVolume" placeholder="e.g. 50000">
+    <div class="pool-selector">
+      <label for="poolSelect">Pool:</label>
+      <div class="select-wrapper">
+        <select id="poolSelect">
+          <option value="660000">Main Pool (660,000 L)</option>
+          <option value="76000">Leisure Pool (76,000 L)</option>
+          <option value="12000">Spa (12,000 L)</option>
+          <option value="440000">Main Pool - Crib Point (440,000 L)</option>
+          <option value="15000">Leisure Pool - Crib Point (15,000 L)</option>
+          <option value="custom">Custom Volume...</option>
+        </select>
+      </div>
+      <div class="custom-volume" id="customVolumeContainer">
+        <label for="customVolume">Volume (L):</label>
+        <input type="number" id="customVolume" placeholder="e.g. 50000">
+      </div>
+    </div>
   </div>
-</div>
+</header>
 
-<div class="reference-table">
-  <h3>Pool Volume Reference</h3>
-  <table>
-    <tr>
-      <th>Pool</th>
-      <th>Volume</th>
-    </tr>
-    <tr>
-      <td>Spa</td>
-      <td>12,000 L</td>
-    </tr>
-    <tr>
-      <td>Leisure Pool - Crib Point</td>
-      <td>15,000 L</td>
-    </tr>
-    <tr>
-      <td>Leisure Pool</td>
-      <td>76,000 L</td>
-    </tr>
-    <tr>
-      <td>Main Pool - Crib Point</td>
-      <td>440,000 L</td>
-    </tr>
-    <tr>
-      <td>Main Pool</td>
-      <td>660,000 L</td>
-    </tr>
-  </table>
-</div>
+<main class="main">
 
-<div class="grid">
+  <section class="reference-section">
+    <div class="reference-table">
+      <h3>Pool Volume Reference</h3>
+      <table>
+        <tr>
+          <th>Pool</th>
+          <th>Volume</th>
+        </tr>
+        <tr>
+          <td>Spa</td>
+          <td>12,000 L</td>
+        </tr>
+        <tr>
+          <td>Leisure Pool - Crib Point</td>
+          <td>15,000 L</td>
+        </tr>
+        <tr>
+          <td>Leisure Pool</td>
+          <td>76,000 L</td>
+        </tr>
+        <tr>
+          <td>Main Pool - Crib Point</td>
+          <td>440,000 L</td>
+        </tr>
+        <tr>
+          <td>Main Pool</td>
+          <td>660,000 L</td>
+        </tr>
+      </table>
+    </div>
+  </section>
 
-  <div class="card">
-    <h2>Increase Alkalinity</h2>
-    <label>Current Alkalinity (ppm)</label>
-    <input type="number" id="taNow" value="23">
-    <label>Target Alkalinity (ppm)</label>
-    <input type="number" id="taTarget" value="90">
-    <div class="result" id="taResult">0 kg Sodium Bicarbonate</div>
-  </div>
+  <section class="calculations-section">
+    <div class="section-header">
+      <div class="section-icon">&#x2697;</div>
+      <h2>Chemical Calculations</h2>
+    </div>
 
-  <div class="card">
-    <h2>Decrease Alkalinity</h2>
-    <label>Current Alkalinity (ppm)</label>
-    <input type="number" id="taNowDec" value="134">
-    <label>Target Alkalinity (ppm)</label>
-    <input type="number" id="taTargetDec" value="80">
-    <div class="result" id="taDecResult">0 L Hydrochloric Acid (33%)</div>
-  </div>
+    <div class="grid">
 
-  <div class="card">
-    <h2>Increase Free Chlorine</h2>
-    <label>Current Free Chlorine (ppm)</label>
-    <input type="number" id="fcNow" value="0">
-    <label>Target Free Chlorine (ppm)</label>
-    <input type="number" id="fcTarget" value="5">
-    <div class="result" id="fcResult">0 L Sodium Hypochlorite (12.5%)</div>
-  </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon increase">&#x2191;</div>
+          <div>
+            <h2>Increase Alkalinity</h2>
+            <div class="card-subtitle">Sodium Bicarbonate</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current (ppm)</label>
+            <input type="number" id="taNow" value="23">
+          </div>
+          <div class="input-group">
+            <label>Target (ppm)</label>
+            <input type="number" id="taTarget" value="90">
+          </div>
+        </div>
+        <div class="result" id="taResult">0 kg Sodium Bicarbonate</div>
+      </div>
 
-  <div class="card">
-    <h2>Decrease Free Chlorine</h2>
-    <label>Current Free Chlorine (ppm)</label>
-    <input type="number" id="fcNowDec" value="10">
-    <label>Target Free Chlorine (ppm)</label>
-    <input type="number" id="fcTargetDec" value="7">
-    <div class="result" id="fcDecResult">0 kg Sodium Thiosulphate</div>
-  </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon decrease">&#x2193;</div>
+          <div>
+            <h2>Decrease Alkalinity</h2>
+            <div class="card-subtitle">Hydrochloric Acid</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current (ppm)</label>
+            <input type="number" id="taNowDec" value="134">
+          </div>
+          <div class="input-group">
+            <label>Target (ppm)</label>
+            <input type="number" id="taTargetDec" value="80">
+          </div>
+        </div>
+        <div class="result" id="taDecResult">0 L Hydrochloric Acid (33%)</div>
+      </div>
 
-  <div class="card">
-    <h2>Increase Isocyanuric Acid (CYA)</h2>
-    <label>Current CYA (ppm)</label>
-    <input type="number" id="cyaNow" value="9">
-    <label>Target CYA (ppm)</label>
-    <input type="number" id="cyaTarget" value="65.819">
-    <div class="result" id="cyaResult">0 kg Isocyanuric Acid</div>
-  </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon increase">&#x2191;</div>
+          <div>
+            <h2>Increase Free Chlorine</h2>
+            <div class="card-subtitle">Sodium Hypochlorite</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current (ppm)</label>
+            <input type="number" id="fcNow" value="0">
+          </div>
+          <div class="input-group">
+            <label>Target (ppm)</label>
+            <input type="number" id="fcTarget" value="5">
+          </div>
+        </div>
+        <div class="result" id="fcResult">0 L Sodium Hypochlorite (12.5%)</div>
+      </div>
 
-  <div class="card">
-    <h2>Decrease pH</h2>
-    <label>Current pH</label>
-    <input type="number" id="phNowDec" value="7.92">
-    <label>Target pH</label>
-    <input type="number" id="phTargetDec" value="7.4">
-    <div class="result" id="phDecResult">0 kg Sodium Bisulphate or 0 L HCl (33%)</div>
-  </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon decrease">&#x2193;</div>
+          <div>
+            <h2>Decrease Free Chlorine</h2>
+            <div class="card-subtitle">Sodium Thiosulphate</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current (ppm)</label>
+            <input type="number" id="fcNowDec" value="10">
+          </div>
+          <div class="input-group">
+            <label>Target (ppm)</label>
+            <input type="number" id="fcTargetDec" value="7">
+          </div>
+        </div>
+        <div class="result" id="fcDecResult">0 kg Sodium Thiosulphate</div>
+      </div>
 
-  <div class="card">
-    <h2>Increase pH</h2>
-    <label>Current pH</label>
-    <input type="number" id="phNowInc" value="7.12">
-    <label>Target pH</label>
-    <input type="number" id="phTargetInc" value="7.4">
-    <div class="result" id="phIncResult">0 kg Sodium Bicarbonate or Carbonate</div>
-  </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon increase">&#x2191;</div>
+          <div>
+            <h2>Increase CYA</h2>
+            <div class="card-subtitle">Isocyanuric Acid</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current (ppm)</label>
+            <input type="number" id="cyaNow" value="9">
+          </div>
+          <div class="input-group">
+            <label>Target (ppm)</label>
+            <input type="number" id="cyaTarget" value="65.819">
+          </div>
+        </div>
+        <div class="result" id="cyaResult">0 kg Isocyanuric Acid</div>
+      </div>
 
-  <div class="card">
-    <h2>Increase Calcium</h2>
-    <label>Current Calcium (mg/L)</label>
-    <input type="number" id="caNow" value="0.3">
-    <label>Target Calcium (mg/L)</label>
-    <input type="number" id="caTarget" value="10">
-    <div class="result" id="caResult">0 kg CaCl₂</div>
-  </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon decrease">&#x2193;</div>
+          <div>
+            <h2>Decrease pH</h2>
+            <div class="card-subtitle">Sodium Bisulphate / HCl</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current pH</label>
+            <input type="number" id="phNowDec" value="7.92">
+          </div>
+          <div class="input-group">
+            <label>Target pH</label>
+            <input type="number" id="phTargetDec" value="7.4">
+          </div>
+        </div>
+        <div class="result" id="phDecResult">0 kg Sodium Bisulphate or 0 L HCl (33%)</div>
+      </div>
 
-</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon increase">&#x2191;</div>
+          <div>
+            <h2>Increase pH</h2>
+            <div class="card-subtitle">Sodium Bicarbonate / Carbonate</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current pH</label>
+            <input type="number" id="phNowInc" value="7.12">
+          </div>
+          <div class="input-group">
+            <label>Target pH</label>
+            <input type="number" id="phTargetInc" value="7.4">
+          </div>
+        </div>
+        <div class="result" id="phIncResult">0 kg Sodium Bicarbonate or Carbonate</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon increase">&#x2191;</div>
+          <div>
+            <h2>Increase Calcium</h2>
+            <div class="card-subtitle">Calcium Chloride</div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Current (mg/L)</label>
+            <input type="number" id="caNow" value="0.3">
+          </div>
+          <div class="input-group">
+            <label>Target (mg/L)</label>
+            <input type="number" id="caTarget" value="10">
+          </div>
+        </div>
+        <div class="result" id="caResult">0 kg CaCl2</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>Pool Chemistry Calculator &bull; Results update automatically</p>
+</footer>
 
 <script>
-let poolVolume = 660000; // Default to Main Pool
+let poolVolume = 660000;
 
 function update() {
   const f = (val, dec=3) => Number(val).toFixed(dec);
