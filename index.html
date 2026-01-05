@@ -49,6 +49,67 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
   }
+  .custom-volume {
+    display: none;
+    margin-top: 15px;
+  }
+  .custom-volume.show {
+    display: block;
+  }
+  .custom-volume input {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    width: 200px;
+    text-align: center;
+  }
+  .custom-volume label {
+    color: white;
+    font-size: 1rem;
+    margin-right: 10px;
+  }
+  .reference-table {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 0 auto 30px auto;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .reference-table h3 {
+    margin: 0 0 15px 0;
+    color: #4a5568;
+    text-align: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+  }
+  .reference-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .reference-table th,
+  .reference-table td {
+    padding: 10px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .reference-table th {
+    color: #667eea;
+    font-weight: 600;
+  }
+  .reference-table td {
+    color: #4a5568;
+  }
+  .reference-table tr:last-child td {
+    border-bottom: none;
+  }
+  .reference-table td:last-child {
+    text-align: right;
+    font-weight: 500;
+  }
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -123,7 +184,44 @@
     <option value="660000">Main Pool (660,000 L)</option>
     <option value="76000">Leisure Pool (76,000 L)</option>
     <option value="12000">Spa (12,000 L)</option>
+    <option value="440000">Main Pool - Crib Point (440,000 L)</option>
+    <option value="15000">Leisure Pool - Crib Point (15,000 L)</option>
+    <option value="custom">Custom Volume...</option>
   </select>
+  <div class="custom-volume" id="customVolumeContainer">
+    <label for="customVolume">Enter Volume (L):</label>
+    <input type="number" id="customVolume" placeholder="e.g. 50000">
+  </div>
+</div>
+
+<div class="reference-table">
+  <h3>Pool Volume Reference</h3>
+  <table>
+    <tr>
+      <th>Pool</th>
+      <th>Volume</th>
+    </tr>
+    <tr>
+      <td>Spa</td>
+      <td>12,000 L</td>
+    </tr>
+    <tr>
+      <td>Leisure Pool - Crib Point</td>
+      <td>15,000 L</td>
+    </tr>
+    <tr>
+      <td>Leisure Pool</td>
+      <td>76,000 L</td>
+    </tr>
+    <tr>
+      <td>Main Pool - Crib Point</td>
+      <td>440,000 L</td>
+    </tr>
+    <tr>
+      <td>Main Pool</td>
+      <td>660,000 L</td>
+    </tr>
+  </table>
 </div>
 
 <div class="grid">
@@ -252,12 +350,23 @@ function update() {
 }
 
 function updatePoolVolume() {
-  poolVolume = parseInt(document.getElementById("poolSelect").value);
+  const selectValue = document.getElementById("poolSelect").value;
+  const customContainer = document.getElementById("customVolumeContainer");
+
+  if (selectValue === "custom") {
+    customContainer.classList.add("show");
+    const customValue = document.getElementById("customVolume").value;
+    poolVolume = customValue ? parseInt(customValue) : 0;
+  } else {
+    customContainer.classList.remove("show");
+    poolVolume = parseInt(selectValue);
+  }
   update();
 }
 
 document.getElementById("poolSelect").addEventListener("change", updatePoolVolume);
-document.querySelectorAll("input").forEach(el => el.addEventListener("input", update));
+document.getElementById("customVolume").addEventListener("input", updatePoolVolume);
+document.querySelectorAll(".card input").forEach(el => el.addEventListener("input", update));
 update();
 </script>
 
