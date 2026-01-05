@@ -1,992 +1,952 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Pool Chemistry Calculator</title>
-<style>
-  :root {
-    --primary: #0891b2;
-    --primary-dark: #0e7490;
-    --primary-light: #22d3ee;
-    --secondary: #06b6d4;
-    --accent: #f0fdfa;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --bg-gradient: linear-gradient(135deg, #0c4a6e 0%, #164e63 50%, #134e4a 100%);
-    --card-bg: rgba(255, 255, 255, 0.97);
-    --text-primary: #1e293b;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --border: #e2e8f0;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    --radius: 16px;
-    --radius-sm: 8px;
-  }
-
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    background: var(--bg-gradient);
-    min-height: 100vh;
-    color: var(--text-primary);
-    line-height: 1.6;
-  }
-
-  /* Header */
-  .header {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 20px 24px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .logo-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, var(--primary-light), var(--primary));
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    box-shadow: var(--shadow);
-  }
-
-  .logo-text h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.02em;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-
-  .logo-text span {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 400;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Pool Selector */
-  .pool-selector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .pool-selector label {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-
-  .select-wrapper {
-    position: relative;
-  }
-
-  .pool-selector select {
-    appearance: none;
-    padding: 10px 40px 10px 16px;
-    font-size: 0.95rem;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 500;
-    min-width: 220px;
-  }
-
-  .pool-selector select:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-
-  .pool-selector select:focus {
-    outline: none;
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
-  }
-
-  .pool-selector select option {
-    background: var(--text-primary);
-    color: white;
-  }
-
-  .select-wrapper::after {
-    content: '';
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(255, 255, 255, 0.8);
-    pointer-events: none;
-  }
-
-  .custom-volume {
-    display: none;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .custom-volume.show {
-    display: flex;
-  }
-
-  .custom-volume input {
-    padding: 10px 16px;
-    font-size: 0.95rem;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    width: 140px;
-    text-align: center;
-    font-weight: 500;
-  }
-
-  .custom-volume input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .custom-volume input:focus {
-    outline: none;
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
-  }
-
-  .custom-volume label {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-  }
-
-  /* Main Content */
-  .main {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px 24px;
-  }
-
-  /* Reference Section */
-  .reference-section {
-    margin-bottom: 40px;
-  }
-
-  .reference-table {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow-lg);
-    max-width: 600px;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-
-  .reference-table h3 {
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .reference-table h3::before {
-    content: '';
-    width: 4px;
-    height: 24px;
-    background: linear-gradient(180deg, var(--primary), var(--secondary));
-    border-radius: 2px;
-  }
-
-  .reference-table table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .reference-table th,
-  .reference-table td {
-    padding: 12px 16px;
-    text-align: left;
-  }
-
-  .reference-table th {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .reference-table th:first-child {
-    border-radius: var(--radius-sm) 0 0 0;
-  }
-
-  .reference-table th:last-child {
-    border-radius: 0 var(--radius-sm) 0 0;
-    text-align: right;
-  }
-
-  .reference-table td {
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
-  }
-
-  .reference-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .reference-table td:last-child {
-    text-align: right;
-    font-weight: 600;
-    color: var(--primary-dark);
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-  }
-
-  .reference-table tr:hover td {
-    background: var(--accent);
-  }
-
-  /* Section Headers */
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .section-header h2 {
-    color: white;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-
-  .section-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
-
-  /* Adjustment Selector */
-  .adjustment-selector {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-
-  .adjustment-selector label {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    font-weight: 500;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    min-width: 100px;
-  }
-
-  .adjustment-selector .select-wrapper {
-    flex: 1;
-    max-width: 400px;
-  }
-
-  .adjustment-selector select {
-    appearance: none;
-    width: 100%;
-    padding: 14px 44px 14px 20px;
-    font-size: 1rem;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 500;
-  }
-
-  .adjustment-selector select:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-
-  .adjustment-selector select:focus {
-    outline: none;
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
-  }
-
-  .adjustment-selector select option {
-    background: var(--text-primary);
-    color: white;
-  }
-
-  /* Grid Layout */
-  .calculations-section {
-    margin-bottom: 48px;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  .card {
-    display: none;
-  }
-
-  .card.active {
-    display: block;
-  }
-
-  /* Cards */
-  .card {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow-lg);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
-  }
-
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .card-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  .card-icon.increase {
-    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    color: #15803d;
-  }
-
-  .card-icon.decrease {
-    background: linear-gradient(135deg, #fee2e2, #fecaca);
-    color: #dc2626;
-  }
-
-  .card h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.3;
-  }
-
-  .card-subtitle {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
-
-  /* Form Elements */
-  .input-group {
-    margin-bottom: 16px;
-  }
-
-  .input-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  input[type="number"] {
-    width: 100%;
-    padding: 12px 14px;
-    font-size: 1rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-sm);
-    transition: all 0.2s ease;
-    background: #f8fafc;
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-
-  input[type="number"]:hover {
-    border-color: #cbd5e1;
-  }
-
-  input[type="number"]:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: white;
-    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
-  }
-
-  /* Result Display */
-  .result {
-    margin-top: 20px;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    text-align: center;
-    font-size: 1.05rem;
-    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .result::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    animation: shimmer 2s infinite;
-  }
-
-  @keyframes shimmer {
-    100% { left: 100%; }
-  }
-
-  /* Footer */
-  .footer {
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    padding: 24px;
-    text-align: center;
-    margin-top: 40px;
-  }
-
-  .footer p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
-  }
-
-  .footer a {
-    color: var(--primary-light);
-    text-decoration: none;
-  }
-
-  .footer a:hover {
-    text-decoration: underline;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .header-content {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .pool-selector {
-      width: 100%;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .pool-selector select {
-      width: 100%;
-    }
-
-    .custom-volume {
-      width: 100%;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .custom-volume input {
-      width: 100%;
-    }
-
-    .grid {
-      grid-template-columns: 1fr;
-    }
-
-    .input-row {
-      grid-template-columns: 1fr;
-    }
-
-    .main {
-      padding: 20px 16px;
-    }
-
-    .logo-text h1 {
-      font-size: 1.25rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .card {
-      padding: 20px;
-    }
-
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-    }
-
-    .result {
-      font-size: 0.95rem;
-      padding: 14px 16px;
-    }
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Pool Chemistry Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-light-gray: #F2F2F7;
+            --ios-separator: #C6C6C8;
+            --ios-background: #FFFFFF;
+            --ios-grouped-bg: #F2F2F7;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--ios-grouped-bg);
+            color: #000;
+            line-height: 1.47;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 20px 16px 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 28px;
+            padding-top: 8px;
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: var(--ios-gray);
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        .card {
+            background: var(--ios-background);
+            border-radius: 16px;
+            padding: 0;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px 12px;
+            border-bottom: 0.5px solid var(--ios-separator);
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: #000;
+        }
+
+        .card-body {
+            padding: 16px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: var(--ios-gray);
+            text-transform: uppercase;
+            letter-spacing: -0.08px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 11px 16px;
+            font-size: 17px;
+            border: none;
+            border-radius: 10px;
+            background: var(--ios-light-gray);
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+            appearance: none;
+            font-family: inherit;
+            color: #000;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23C7C7CC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 44px;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            font-variant-numeric: tabular-nums;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            background: #E8E8ED;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .reference-list {
+            padding: 0;
+        }
+
+        .reference-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 0.5px solid var(--ios-separator);
+        }
+
+        .reference-item:last-child {
+            border-bottom: none;
+        }
+
+        .reference-label {
+            font-size: 17px;
+            color: #000;
+            font-weight: 400;
+        }
+
+        .reference-value {
+            font-size: 17px;
+            color: var(--ios-gray);
+            font-weight: 400;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .calculation-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 16px 20px;
+        }
+
+        .calc-button {
+            padding: 14px 12px;
+            background: var(--ios-light-gray);
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .calc-button:active {
+            transform: scale(0.96);
+            background: #E8E8ED;
+        }
+
+        .calc-button.active {
+            background: var(--ios-blue);
+            color: white;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: var(--ios-light-gray);
+            border-radius: 9px;
+            padding: 2px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-option {
+            flex: 1;
+            padding: 7px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .toggle-option.active {
+            background: var(--ios-background);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.04);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+            margin: 0 20px;
+            transform: scale(0.95);
+            opacity: 0;
+            max-height: 0;
+            padding: 0 24px;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .result-card.show {
+            transform: scale(1);
+            opacity: 1;
+            max-height: 200px;
+            padding: 32px 24px;
+            margin: 20px 20px 16px;
+        }
+
+        .result-label {
+            font-size: 15px;
+            opacity: 0.85;
+            margin-bottom: 12px;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+        }
+
+        .result-value {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .result-unit {
+            font-size: 22px;
+            opacity: 0.9;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .result-chemical {
+            font-size: 17px;
+            opacity: 0.8;
+            margin-top: 16px;
+            font-weight: 400;
+            letter-spacing: -0.2px;
+        }
+
+        .result-card.mismatch {
+            background: linear-gradient(135deg, #FF9500 0%, #FF6B00 100%);
+        }
+
+        .result-card.mismatch .result-value {
+            font-size: 20px;
+            letter-spacing: -0.3px;
+            line-height: 1.4;
+        }
+
+        .result-card.mismatch .result-unit {
+            display: none;
+        }
+
+        /* Chemical-specific colors */
+        .result-card.chem-bicarb {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+        }
+        .result-card.chem-hypo {
+            background: linear-gradient(135deg, #34C759 0%, #248A3D 100%);
+        }
+        .result-card.chem-cya {
+            background: linear-gradient(135deg, #AF52DE 0%, #8944AB 100%);
+        }
+        .result-card.chem-hcl {
+            background: linear-gradient(135deg, #FF3B30 0%, #C41E3A 100%);
+        }
+        .result-card.chem-thio {
+            background: linear-gradient(135deg, #FFCC00 0%, #E6A800 100%);
+        }
+        .result-card.chem-thio .result-label,
+        .result-card.chem-thio .result-value,
+        .result-card.chem-thio .result-unit,
+        .result-card.chem-thio .result-chemical {
+            color: #1a1a1a;
+        }
+
+        /* Legend styles */
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 16px 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--ios-light-gray);
+            border-radius: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-color.bicarb { background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%); }
+        .legend-color.hypo { background: linear-gradient(135deg, #34C759 0%, #248A3D 100%); }
+        .legend-color.cya { background: linear-gradient(135deg, #AF52DE 0%, #8944AB 100%); }
+        .legend-color.hcl { background: linear-gradient(135deg, #FF3B30 0%, #C41E3A 100%); }
+        .legend-color.thio { background: linear-gradient(135deg, #FFCC00 0%, #E6A800 100%); }
+
+        .legend-name {
+            font-size: 13px;
+            color: #000;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 480px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pool-volume-display {
+            display: block;
+            margin-top: 8px;
+            font-size: 15px;
+            color: var(--ios-gray);
+            font-weight: 400;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: rgba(0, 122, 255, 0.1);
+            color: var(--ios-blue);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 480px) {
+            .calculation-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .result-value {
+                font-size: 48px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding-top: 40px;
+            }
+
+            h1 {
+                font-size: 40px;
+            }
+
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (hover: hover) {
+            .calc-button:hover {
+                background: #E8E8ED;
+            }
+
+            .calc-button.active:hover {
+                background: #0066FF;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Pool Chemistry</h1>
+            <p class="subtitle">Calculate chemical dosages</p>
+        </header>
 
-<header class="header">
-  <div class="header-content">
-    <div class="logo">
-      <div class="logo-icon">&#x1F30A;</div>
-      <div class="logo-text">
-        <h1>Pool Chemistry</h1>
-        <span>Chemical Calculator</span>
-      </div>
+        <!-- Pool Selection -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Select Pool</h2>
+            </div>
+            <div class="card-body">
+                <div class="toggle-group">
+                    <button class="toggle-option active" data-facility="pelican">Pelican Park</button>
+                    <button class="toggle-option" data-facility="cribpoint">Crib Point</button>
+                </div>
+            </div>
+
+            <div class="calculation-grid" id="pelicanPools" style="padding: 0 20px 16px;">
+                <button class="calc-button active" data-pool="660000">Main Pool</button>
+                <button class="calc-button" data-pool="76000">Leisure Pool</button>
+                <button class="calc-button" data-pool="12000">Spa</button>
+                <button class="calc-button" data-pool="custom">Custom</button>
+            </div>
+
+            <div class="calculation-grid hidden" id="cribpointPools" style="padding: 0 20px 16px;">
+                <button class="calc-button" data-pool="440000">Main Pool</button>
+                <button class="calc-button" data-pool="15000">Leisure Pool</button>
+                <button class="calc-button" data-pool="custom">Custom</button>
+            </div>
+
+            <div class="card-body" style="padding-top: 0;">
+                <span class="pool-volume-display" id="poolVolume" style="display: block; text-align: center;">660,000 L</span>
+
+                <div class="form-group hidden" id="customVolumeGroup" style="margin-top: 16px;">
+                    <label for="customVolume">Custom Volume (L)</label>
+                    <input type="number" id="customVolume" placeholder="Enter volume in liters" min="0" step="1000">
+                </div>
+            </div>
+        </div>
+
+        <!-- Chemical Calculator -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Calculate Adjustment</h2>
+            </div>
+            <div class="card-body">
+                <div class="toggle-group">
+                    <button class="toggle-option active" data-direction="increase">Increase</button>
+                    <button class="toggle-option" data-direction="decrease">Decrease</button>
+                </div>
+            </div>
+
+            <div class="calculation-grid" id="increaseOptions">
+                <button class="calc-button" data-calc="alkalinity-up">Alkalinity</button>
+                <button class="calc-button" data-calc="chlorine-up">Free Chlorine</button>
+                <button class="calc-button" data-calc="ph-up">pH</button>
+                <button class="calc-button hidden" data-calc="cya-up" id="cyaButton">CYA</button>
+            </div>
+
+            <div class="calculation-grid hidden" id="decreaseOptions">
+                <button class="calc-button" data-calc="alkalinity-down">Alkalinity</button>
+                <button class="calc-button" data-calc="chlorine-down">Free Chlorine</button>
+                <button class="calc-button" data-calc="ph-down">pH</button>
+            </div>
+
+            <div id="calculatorInputs" class="hidden">
+                <div id="chemicalOptions" class="hidden" style="padding: 0 20px 16px;"></div>
+
+                <div class="card-body">
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label for="currentValue">Current (mg/L)</label>
+                            <input type="number" id="currentValue" placeholder="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="targetValue">Target (mg/L)</label>
+                            <input type="number" id="targetValue" placeholder="0" step="0.1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result" class="result-card">
+                <div class="result-label">Add</div>
+                <div>
+                    <span class="result-value" id="resultValue">0</span>
+                    <span class="result-unit" id="resultUnit">kg</span>
+                </div>
+                <div class="result-chemical" id="resultChemical">Sodium Bicarbonate</div>
+            </div>
+        </div>
+
+        <!-- Chemical Legend -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Chemical Legend</h2>
+            </div>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <div class="legend-color bicarb"></div>
+                    <span class="legend-name">Sodium Bicarbonate</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color hypo"></div>
+                    <span class="legend-name">Sodium Hypochlorite 12.5%</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color cya"></div>
+                    <span class="legend-name">Isocyanuric Acid</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color hcl"></div>
+                    <span class="legend-name">HCl 33%</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color thio"></div>
+                    <span class="legend-name">Sodium Thiosulphate</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-  </div>
-</header>
+    <script>
+        // State
+        let state = {
+            poolVolume: 660000,
+            poolType: 'pelican',
+            selectedCalc: null,
+            selectedChemical: null,
+            direction: 'increase',
+            currentValue: 0,
+            targetValue: 0,
+            inputMemory: {} // Stores {calcBaseName: {current: value, target: value}}
+        };
 
-<main class="main">
+        // Pool configurations
+        const pools = {
+            '660000': { type: 'pelican', name: 'Main Pool - Pelican Park', chlorineRange: '1-2.5 mg/L' },
+            '76000': { type: 'pelican', name: 'Leisure Pool - Pelican Park', chlorineRange: '1-2.5 mg/L' },
+            '12000': { type: 'pelican', name: 'Spa - Pelican Park', chlorineRange: '3-4.5 mg/L' },
+            '440000': { type: 'cribpoint', name: 'Main Pool - Crib Point', chlorineRange: '2-3.5 mg/L' },
+            '15000': { type: 'cribpoint', name: 'Leisure Pool - Crib Point', chlorineRange: '2-3.5 mg/L' }
+        };
 
-  <section class="reference-section">
-    <div class="reference-table">
-      <h3>Quick Reference</h3>
-      <table>
-        <tr>
-          <th>Parameter</th>
-          <th>Desired</th>
-        </tr>
-        <tr>
-          <td>Alkalinity</td>
-          <td>80-120 (min 60)</td>
-        </tr>
-        <tr>
-          <td>CYA (Crib Pt only)</td>
-          <td>30-100</td>
-        </tr>
-        <tr>
-          <td>pH</td>
-          <td>7.35</td>
-        </tr>
-        <tr>
-          <td>Free Cl - Spa</td>
-          <td>4.5 (min 3)</td>
-        </tr>
-        <tr>
-          <td>Free Cl - Main</td>
-          <td>2.5 (min 1)</td>
-        </tr>
-        <tr>
-          <td>Free Cl - Leisure</td>
-          <td>2.5 (min 1)</td>
-        </tr>
-        <tr>
-          <td>Free Cl - Main Crib Pt</td>
-          <td>3.5 (min 2)</td>
-        </tr>
-        <tr>
-          <td>Free Cl - Leisure Crib Pt</td>
-          <td>3.5 (min 2)</td>
-        </tr>
-      </table>
-    </div>
-  </section>
+        // Target ranges for each calculation type
+        const targetRanges = {
+            'alkalinity': '80-120 mg/L',
+            'ph': '7.35',
+            'chlorine': null, // Dynamic - uses pool's chlorineRange
+            'cya': '30-100 mg/L',
+            'calcium': '200-400 mg/L'
+        };
 
-  <section class="calculations-section">
-    <div class="section-header">
-      <div class="section-icon">&#x2697;</div>
-      <h2>Chemical Calculations</h2>
-    </div>
+        // Chemical to color class mapping
+        const chemicalColors = {
+            'Sodium Bicarbonate': 'chem-bicarb',
+            'Sodium Hypochlorite 12.5%': 'chem-hypo',
+            'Isocyanuric Acid': 'chem-cya',
+            'HCl 33%': 'chem-hcl',
+            'Sodium Thiosulphate': 'chem-thio'
+        };
 
-    <div class="adjustment-selector">
-      <label for="poolSelect">Pool:</label>
-      <div class="select-wrapper">
-        <select id="poolSelect">
-          <option value="660000">Main Pool (660,000 L)</option>
-          <option value="76000">Leisure Pool (76,000 L)</option>
-          <option value="12000">Spa (12,000 L)</option>
-          <option value="440000">Main Pool - Crib Point (440,000 L)</option>
-          <option value="15000">Leisure Pool - Crib Point (15,000 L)</option>
-          <option value="custom">Custom Volume...</option>
-        </select>
-      </div>
-      <div class="custom-volume" id="customVolumeContainer">
-        <label for="customVolume">Volume (L):</label>
-        <input type="number" id="customVolume" placeholder="e.g. 50000">
-      </div>
-    </div>
+        // Chemical calculations
+        const calculations = {
+            'alkalinity-up': {
+                label: 'Increase Alkalinity',
+                chemical: 'Sodium Bicarbonate',
+                multiplier: 2,
+                unit: 'kg'
+            },
+            'chlorine-up': {
+                label: 'Increase Free Chlorine',
+                chemical: 'Sodium Hypochlorite 12.5%',
+                multiplier: 8,
+                unit: 'L'
+            },
+            'cya-up': {
+                label: 'Increase CYA',
+                chemical: 'Isocyanuric Acid',
+                multiplier: 1,
+                unit: 'kg'
+            },
+            'ph-up': {
+                label: 'Increase pH',
+                chemical: 'Sodium Bicarbonate',
+                multiplier: 800,
+                unit: 'kg'
+            },
+            'alkalinity-down': {
+                label: 'Decrease Alkalinity',
+                chemical: 'HCl 33%',
+                multiplier: 2,
+                unit: 'L'
+            },
+            'chlorine-down': {
+                label: 'Decrease Free Chlorine',
+                chemical: 'Sodium Thiosulphate',
+                multiplier: 1,
+                unit: 'kg'
+            },
+            'ph-down': {
+                label: 'Decrease pH',
+                chemical: 'HCl 33%',
+                multiplier: 0.833,
+                unit: 'L'
+            }
+        };
 
-    <div class="adjustment-selector">
-      <label for="adjustmentSelect">Adjustment:</label>
-      <div class="select-wrapper">
-        <select id="adjustmentSelect">
-          <option value="ta-inc">Increase Alkalinity</option>
-          <option value="ta-dec">Decrease Alkalinity</option>
-          <option value="fc-inc">Increase Free Chlorine</option>
-          <option value="fc-dec">Decrease Free Chlorine</option>
-          <option value="cya-inc">Increase CYA</option>
-          <option value="ph-dec">Decrease pH</option>
-          <option value="ph-inc">Increase pH</option>
-          <option value="ca-inc">Increase Calcium</option>
-        </select>
-      </div>
-    </div>
+        // DOM elements
+        const facilityButtons = document.querySelectorAll('[data-facility]');
+        const pelicanPools = document.getElementById('pelicanPools');
+        const cribpointPools = document.getElementById('cribpointPools');
+        const customVolumeGroup = document.getElementById('customVolumeGroup');
+        const customVolume = document.getElementById('customVolume');
+        const poolVolume = document.getElementById('poolVolume');
+        const cyaButton = document.getElementById('cyaButton');
+        const directionToggleButtons = document.querySelectorAll('[data-direction]');
+        const increaseOptions = document.getElementById('increaseOptions');
+        const decreaseOptions = document.getElementById('decreaseOptions');
+        const calcButtons = document.querySelectorAll('[data-calc]');
+        const calculatorInputs = document.getElementById('calculatorInputs');
+        const chemicalOptions = document.getElementById('chemicalOptions');
+        const currentValue = document.getElementById('currentValue');
+        const targetValue = document.getElementById('targetValue');
+        const result = document.getElementById('result');
+        const resultValue = document.getElementById('resultValue');
+        const resultUnit = document.getElementById('resultUnit');
+        const resultChemical = document.getElementById('resultChemical');
 
-    <div class="grid">
+        // Event listeners
+        facilityButtons.forEach(btn => btn.addEventListener('click', handleFacilityToggle));
+        customVolume.addEventListener('input', handleCustomVolumeChange);
+        directionToggleButtons.forEach(btn => btn.addEventListener('click', handleDirectionToggle));
+        calcButtons.forEach(btn => btn.addEventListener('click', handleCalcSelection));
+        currentValue.addEventListener('input', handleInputChange);
+        targetValue.addEventListener('input', handleInputChange);
 
-      <div class="card active" data-type="ta-inc">
-        <div class="card-header">
-          <div class="card-icon increase">&#x2191;</div>
-          <div>
-            <h2>Increase Alkalinity</h2>
-            <div class="card-subtitle">Sodium Bicarbonate</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current (ppm)</label>
-            <input type="number" id="taNow" value="23">
-          </div>
-          <div class="input-group">
-            <label>Target (ppm)</label>
-            <input type="number" id="taTarget" value="100">
-          </div>
-        </div>
-        <div class="result" id="taResult">0 kg Sodium Bicarbonate</div>
-      </div>
+        function handleInputChange() {
+            // Save to memory for current calculation
+            if (state.selectedCalc) {
+                const baseName = state.selectedCalc.replace(/-up$|-down$/, '');
+                state.inputMemory[baseName] = {
+                    current: currentValue.value,
+                    target: targetValue.value
+                };
+            }
+            calculate();
+        }
 
-      <div class="card" data-type="ta-dec">
-        <div class="card-header">
-          <div class="card-icon decrease">&#x2193;</div>
-          <div>
-            <h2>Decrease Alkalinity</h2>
-            <div class="card-subtitle">Hydrochloric Acid</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current (ppm)</label>
-            <input type="number" id="taNowDec" value="134">
-          </div>
-          <div class="input-group">
-            <label>Target (ppm)</label>
-            <input type="number" id="taTargetDec" value="100">
-          </div>
-        </div>
-        <div class="result" id="taDecResult">0 L Hydrochloric Acid (33%)</div>
-      </div>
+        // Add pool button event listeners dynamically
+        function attachPoolListeners() {
+            document.querySelectorAll('[data-pool]').forEach(btn => {
+                btn.addEventListener('click', handlePoolClick);
+            });
+        }
+        attachPoolListeners();
 
-      <div class="card" data-type="fc-inc">
-        <div class="card-header">
-          <div class="card-icon increase">&#x2191;</div>
-          <div>
-            <h2>Increase Free Chlorine</h2>
-            <div class="card-subtitle">Sodium Hypochlorite</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current (ppm)</label>
-            <input type="number" id="fcNow" value="0">
-          </div>
-          <div class="input-group">
-            <label>Target (ppm)</label>
-            <input type="number" id="fcTarget" value="2.5">
-          </div>
-        </div>
-        <div class="result" id="fcResult">0 L Sodium Hypochlorite (12.5%)</div>
-      </div>
+        function handleFacilityToggle(e) {
+            const facility = e.target.dataset.facility;
 
-      <div class="card" data-type="fc-dec">
-        <div class="card-header">
-          <div class="card-icon decrease">&#x2193;</div>
-          <div>
-            <h2>Decrease Free Chlorine</h2>
-            <div class="card-subtitle">Sodium Thiosulphate</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current (ppm)</label>
-            <input type="number" id="fcNowDec" value="10">
-          </div>
-          <div class="input-group">
-            <label>Target (ppm)</label>
-            <input type="number" id="fcTargetDec" value="2.5">
-          </div>
-        </div>
-        <div class="result" id="fcDecResult">0 kg Sodium Thiosulphate</div>
-      </div>
+            // Update facility toggle active states
+            facilityButtons.forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
 
-      <div class="card" data-type="cya-inc">
-        <div class="card-header">
-          <div class="card-icon increase">&#x2191;</div>
-          <div>
-            <h2>Increase CYA</h2>
-            <div class="card-subtitle">Isocyanuric Acid</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current (ppm)</label>
-            <input type="number" id="cyaNow" value="9">
-          </div>
-          <div class="input-group">
-            <label>Target (ppm)</label>
-            <input type="number" id="cyaTarget" value="50">
-          </div>
-        </div>
-        <div class="result" id="cyaResult">0 kg Isocyanuric Acid</div>
-      </div>
+            // Show/hide appropriate pool options
+            if (facility === 'pelican') {
+                pelicanPools.classList.remove('hidden');
+                cribpointPools.classList.add('hidden');
+                state.poolType = 'pelican';
+                cyaButton.classList.add('hidden');
+            } else {
+                pelicanPools.classList.add('hidden');
+                cribpointPools.classList.remove('hidden');
+                state.poolType = 'cribpoint';
+                cyaButton.classList.remove('hidden');
+            }
 
-      <div class="card" data-type="ph-dec">
-        <div class="card-header">
-          <div class="card-icon decrease">&#x2193;</div>
-          <div>
-            <h2>Decrease pH</h2>
-            <div class="card-subtitle">Sodium Bisulphate / HCl</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current pH</label>
-            <input type="number" id="phNowDec" value="7.92">
-          </div>
-          <div class="input-group">
-            <label>Target pH</label>
-            <input type="number" id="phTargetDec" value="7.35">
-          </div>
-        </div>
-        <div class="result" id="phDecResult">0 kg Sodium Bisulphate or 0 L HCl (33%)</div>
-      </div>
+            // Click the first pool button in the visible set
+            const visiblePools = facility === 'pelican' ? pelicanPools : cribpointPools;
+            const firstPoolButton = visiblePools.querySelector('[data-pool]:not([data-pool="custom"])');
+            if (firstPoolButton) {
+                firstPoolButton.click();
+            }
+        }
 
-      <div class="card" data-type="ph-inc">
-        <div class="card-header">
-          <div class="card-icon increase">&#x2191;</div>
-          <div>
-            <h2>Increase pH</h2>
-            <div class="card-subtitle">Sodium Bicarbonate / Carbonate</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current pH</label>
-            <input type="number" id="phNowInc" value="7.12">
-          </div>
-          <div class="input-group">
-            <label>Target pH</label>
-            <input type="number" id="phTargetInc" value="7.35">
-          </div>
-        </div>
-        <div class="result" id="phIncResult">0 kg Sodium Bicarbonate or Carbonate</div>
-      </div>
+        function handlePoolClick(e) {
+            const value = e.target.dataset.pool;
+            const parentGrid = e.target.closest('.calculation-grid');
 
-      <div class="card" data-type="ca-inc">
-        <div class="card-header">
-          <div class="card-icon increase">&#x2191;</div>
-          <div>
-            <h2>Increase Calcium</h2>
-            <div class="card-subtitle">Calcium Chloride</div>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label>Current (mg/L)</label>
-            <input type="number" id="caNow" value="0.3">
-          </div>
-          <div class="input-group">
-            <label>Target (mg/L)</label>
-            <input type="number" id="caTarget" value="10">
-          </div>
-        </div>
-        <div class="result" id="caResult">0 kg Calcium Chloride</div>
-      </div>
+            // Update button active states within the same grid
+            parentGrid.querySelectorAll('[data-pool]').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
 
-    </div>
-  </section>
+            if (value === 'custom') {
+                customVolumeGroup.classList.remove('hidden');
+                poolVolume.style.display = 'none';
+                state.poolType = 'custom';
+            } else {
+                customVolumeGroup.classList.add('hidden');
+                poolVolume.style.display = 'block';
+                state.poolVolume = parseInt(value);
+                state.poolType = pools[value].type;
+                poolVolume.textContent = formatNumber(state.poolVolume) + ' L';
 
-</main>
+                // Show/hide CYA option for Crib Point pools
+                if (state.poolType === 'cribpoint') {
+                    cyaButton.classList.remove('hidden');
+                } else {
+                    cyaButton.classList.add('hidden');
+                }
+            }
 
-<footer class="footer">
-  <p>Pool Chemistry Calculator &bull; Results update automatically</p>
-</footer>
+            calculate();
+        }
 
-<script>
-let poolVolume = 660000;
+        function handleCustomVolumeChange(e) {
+            const value = parseInt(e.target.value) || 0;
+            state.poolVolume = value;
+            calculate();
+        }
 
-function update() {
-  const f = (val, dec=3) => Number(val).toFixed(dec);
+        function handleDirectionToggle(e) {
+            const direction = e.target.dataset.direction;
+            const previousCalc = state.selectedCalc;
+            state.direction = direction;
 
-  // Increase Alkalinity
-  let ta = ( (document.getElementById("taTarget").value - document.getElementById("taNow").value) / 1e6 ) *
-            poolVolume * 2;
-  document.getElementById("taResult").innerText = f(ta) + " kg Sodium Bicarbonate";
+            // Update active toggle
+            directionToggleButtons.forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
 
-  // Decrease Alkalinity
-  let taDec = ( (document.getElementById("taTargetDec").value - document.getElementById("taNowDec").value) / 1e6 ) *
-              poolVolume * 2;
-  document.getElementById("taDecResult").innerText = f(Math.abs(taDec)) + " L Hydrochloric Acid (33%)";
+            // Show/hide option sets
+            if (direction === 'increase') {
+                increaseOptions.classList.remove('hidden');
+                decreaseOptions.classList.add('hidden');
+            } else {
+                increaseOptions.classList.add('hidden');
+                decreaseOptions.classList.remove('hidden');
+            }
 
-  // Increase Free Chlorine
-  let fc = ( (document.getElementById("fcTarget").value - document.getElementById("fcNow").value) / 1e6 ) *
-            poolVolume * 8;
-  document.getElementById("fcResult").innerText = f(fc) + " L Sodium Hypochlorite (12.5%)";
+            // Try to preserve selection if equivalent exists in new direction
+            if (previousCalc) {
+                const baseName = previousCalc.replace(/-up$|-down$/, '');
+                const newCalc = baseName + (direction === 'increase' ? '-up' : '-down');
+                const newButton = document.querySelector(`[data-calc="${newCalc}"]`);
 
-  // Decrease Free Chlorine
-  let fcDec = ( (document.getElementById("fcNowDec").value - document.getElementById("fcTargetDec").value) / 1e6 ) *
-              poolVolume * 1;
-  document.getElementById("fcDecResult").innerText = f(fcDec) + " kg Sodium Thiosulphate";
+                if (newButton && !newButton.classList.contains('hidden')) {
+                    newButton.click();
+                    return;
+                }
+            }
 
-  // Increase CYA
-  let cya = ( (document.getElementById("cyaTarget").value - document.getElementById("cyaNow").value) / 1e6 ) *
-            poolVolume * 1;
-  document.getElementById("cyaResult").innerText = f(cya) + " kg Isocyanuric Acid";
+            // Reset if no equivalent found
+            resetCalculator();
+        }
 
-  // Decrease pH
-  let phDec = ( (document.getElementById("phNowDec").value - document.getElementById("phTargetDec").value) / 1e6 ) *
-              poolVolume * 96;
-  document.getElementById("phDecResult").innerText = f(phDec) + " kg Sodium Bisulphate or " +
-    f(phDec * 0.833) + " L Hydrochloric Acid (33%)";
+        function handleCalcSelection(e) {
+            const calcType = e.target.dataset.calc;
+            const previousCalc = state.selectedCalc;
+            state.selectedCalc = calcType;
 
-  // Increase pH
-  let phInc = ( (document.getElementById("phTargetInc").value - document.getElementById("phNowInc").value) / 1e6 ) *
-              poolVolume * 800;
-  document.getElementById("phIncResult").innerText = f(phInc) + " kg Sodium Bicarbonate or " +
-    f(phInc/2) + " kg Sodium Carbonate";
+            // Update active button
+            calcButtons.forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
 
-  // Increase Calcium
-  let ca = ( (document.getElementById("caTarget").value - document.getElementById("caNow").value) / 1e6 ) *
-            poolVolume * 1.1;
-  document.getElementById("caResult").innerText = f(ca) + " kg Calcium Chloride";
-}
+            // Show inputs
+            calculatorInputs.classList.remove('hidden');
 
-function updatePoolVolume() {
-  const selectValue = document.getElementById("poolSelect").value;
-  const customContainer = document.getElementById("customVolumeContainer");
+            // Handle input values - restore from memory or clear
+            const previousBase = previousCalc ? previousCalc.replace(/-up$|-down$/, '') : null;
+            const currentBase = calcType.replace(/-up$|-down$/, '');
+            if (previousBase !== currentBase) {
+                // Check if we have saved values for this calculation type
+                const savedValues = state.inputMemory[currentBase];
+                if (savedValues) {
+                    currentValue.value = savedValues.current;
+                    targetValue.value = savedValues.target;
+                } else {
+                    currentValue.value = '';
+                    targetValue.value = '';
+                }
+                result.classList.remove('show', 'mismatch');
+            }
 
-  if (selectValue === "custom") {
-    customContainer.classList.add("show");
-    const customValue = document.getElementById("customVolume").value;
-    poolVolume = customValue ? parseInt(customValue) : 0;
-  } else {
-    customContainer.classList.remove("show");
-    poolVolume = parseInt(selectValue);
-  }
-  update();
-}
+            // Update input labels based on calculation type
+            const baseName = calcType.replace(/-up$|-down$/, '');
+            const isPH = baseName === 'ph';
 
-function updateAdjustmentType() {
-  const selectedType = document.getElementById("adjustmentSelect").value;
-  document.querySelectorAll(".card").forEach(card => {
-    if (card.dataset.type === selectedType) {
-      card.classList.add("active");
-    } else {
-      card.classList.remove("active");
-    }
-  });
-}
+            // Get target range for this calculation type
+            let range = targetRanges[baseName];
+            if (baseName === 'chlorine') {
+                // Use pool-specific chlorine range
+                const poolConfig = pools[state.poolVolume];
+                range = poolConfig ? poolConfig.chlorineRange : '1-2.5 mg/L';
+            }
 
-document.getElementById("poolSelect").addEventListener("change", updatePoolVolume);
-document.getElementById("customVolume").addEventListener("input", updatePoolVolume);
-document.getElementById("adjustmentSelect").addEventListener("change", updateAdjustmentType);
-document.querySelectorAll(".card input").forEach(el => el.addEventListener("input", update));
-update();
-</script>
+            document.querySelector('label[for="currentValue"]').textContent = isPH ? 'Current' : 'Current (mg/L)';
+            document.querySelector('label[for="targetValue"]').textContent = isPH ? `Target (${range})` : `Target (${range})`;
 
+            // Handle chemical options
+            const calc = calculations[calcType];
+            if (calc.options) {
+                showChemicalOptions(calc.options);
+            } else {
+                chemicalOptions.classList.add('hidden');
+                state.selectedChemical = {
+                    chemical: calc.chemical,
+                    multiplier: calc.multiplier,
+                    unit: calc.unit
+                };
+            }
+
+            calculate();
+        }
+
+        function showChemicalOptions(options) {
+            chemicalOptions.classList.remove('hidden');
+            chemicalOptions.innerHTML = '<div class="toggle-group" id="chemicalToggle"></div>';
+
+            const toggleGroup = chemicalOptions.querySelector('#chemicalToggle');
+            options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'toggle-option' + (index === 0 ? ' active' : '');
+                btn.textContent = option.chemical;
+                btn.dataset.index = index;
+                btn.addEventListener('click', (e) => {
+                    toggleGroup.querySelectorAll('.toggle-option').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.selectedChemical = option;
+                    calculate();
+                });
+                toggleGroup.appendChild(btn);
+            });
+
+            state.selectedChemical = options[0];
+        }
+
+        function calculate() {
+            if (!state.selectedCalc || !state.selectedChemical) {
+                result.classList.remove('show', 'mismatch');
+                return;
+            }
+
+            const current = parseFloat(currentValue.value) || 0;
+            const target = parseFloat(targetValue.value) || 0;
+
+            if (current === 0 && target === 0) {
+                result.classList.remove('show', 'mismatch');
+                return;
+            }
+
+            // Check if direction matches the values
+            const baseName = state.selectedCalc.replace(/-up$|-down$/, '');
+            const paramName = baseName === 'ph' ? 'pH' :
+                             baseName === 'cya' ? 'CYA' :
+                             baseName.charAt(0).toUpperCase() + baseName.slice(1);
+
+            if (state.direction === 'increase' && target <= current) {
+                showMismatchMessage(`Target ${paramName} must be higher than current to increase`);
+                return;
+            }
+            if (state.direction === 'decrease' && current <= target) {
+                showMismatchMessage(`Current ${paramName} must be higher than target to decrease`);
+                return;
+            }
+
+            // Formula: (|target - current| / 1,000,000) × poolVolume × multiplier
+            const diff = Math.abs(target - current);
+            const amount = (diff / 1000000) * state.poolVolume * state.selectedChemical.multiplier;
+
+            if (amount <= 0) {
+                result.classList.remove('show', 'mismatch');
+                return;
+            }
+
+            // Display result
+            result.classList.remove('mismatch');
+            clearChemicalColors();
+            const colorClass = chemicalColors[state.selectedChemical.chemical];
+            if (colorClass) {
+                result.classList.add(colorClass);
+            }
+            resultValue.textContent = amount.toFixed(2);
+            resultUnit.textContent = state.selectedChemical.unit;
+            resultChemical.textContent = state.selectedChemical.chemical;
+            result.classList.add('show');
+        }
+
+        function clearChemicalColors() {
+            Object.values(chemicalColors).forEach(cls => result.classList.remove(cls));
+        }
+
+        function showMismatchMessage(message) {
+            clearChemicalColors();
+            result.classList.add('mismatch', 'show');
+            resultValue.textContent = message;
+            resultUnit.textContent = '';
+            resultChemical.textContent = '';
+        }
+
+        function resetCalculator() {
+            state.selectedCalc = null;
+            state.selectedChemical = null;
+            calcButtons.forEach(btn => btn.classList.remove('active'));
+            calculatorInputs.classList.add('hidden');
+            clearChemicalColors();
+            result.classList.remove('show', 'mismatch');
+            currentValue.value = '';
+            targetValue.value = '';
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    </script>
 </body>
 </html>
