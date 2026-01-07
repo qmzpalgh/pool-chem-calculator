@@ -258,6 +258,13 @@
             max-height: 200px;
             padding: 32px 24px;
             margin: 20px 20px 16px;
+            animation: resultPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes resultPulse {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         .result-label {
@@ -506,11 +513,11 @@
                     <div class="input-row">
                         <div class="form-group">
                             <label for="currentValue">Current (mg/L)</label>
-                            <input type="number" id="currentValue" placeholder="0" step="0.1">
+                            <input type="number" id="currentValue" placeholder="0" step="0.1" min="0">
                         </div>
                         <div class="form-group">
                             <label for="targetValue">Target (mg/L)</label>
-                            <input type="number" id="targetValue" placeholder="0" step="0.1">
+                            <input type="number" id="targetValue" placeholder="0" step="0.1" min="0">
                         </div>
                     </div>
                 </div>
@@ -651,6 +658,7 @@
         const poolVolume = document.getElementById('poolVolume');
         const cyaButton = document.getElementById('cyaButton');
         const directionToggleButtons = document.querySelectorAll('[data-direction]');
+        const decreaseButton = document.querySelector('[data-direction="decrease"]');
         const increaseOptions = document.getElementById('increaseOptions');
         const decreaseOptions = document.getElementById('decreaseOptions');
         const calcButtons = document.querySelectorAll('[data-calc]');
@@ -670,6 +678,14 @@
         calcButtons.forEach(btn => btn.addEventListener('click', handleCalcSelection));
         currentValue.addEventListener('input', handleInputChange);
         targetValue.addEventListener('input', handleInputChange);
+
+        // Add keyboard support for Enter key
+        currentValue.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') targetValue.focus();
+        });
+        targetValue.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') e.target.blur();
+        });
 
         function handleInputChange() {
             // Save to memory for current calculation
@@ -800,6 +816,14 @@
 
             // Show inputs
             calculatorInputs.classList.remove('hidden');
+
+            // Hide decrease button for CYA (cannot decrease CYA chemically)
+            const baseName = calcType.replace(/-up$|-down$/, '');
+            if (baseName === 'cya') {
+                decreaseButton.classList.add('hidden');
+            } else {
+                decreaseButton.classList.remove('hidden');
+            }
 
             // Handle input values - restore from memory or clear
             const previousBase = previousCalc ? previousCalc.replace(/-up$|-down$/, '') : null;
@@ -942,6 +966,7 @@
             result.classList.remove('show', 'mismatch');
             currentValue.value = '';
             targetValue.value = '';
+            decreaseButton.classList.remove('hidden');
         }
 
         function formatNumber(num) {
