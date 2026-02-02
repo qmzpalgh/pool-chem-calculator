@@ -461,12 +461,16 @@
             position: relative;
             width: 51px;
             height: 31px;
-            background: var(--ios-light-gray);
+            background: #787880;
             border-radius: 15.5px;
             border: none;
             cursor: pointer;
             transition: background-color 0.3s ease;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            background: #636366;
         }
 
         .theme-toggle.active {
