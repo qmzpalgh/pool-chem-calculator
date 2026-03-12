@@ -708,14 +708,15 @@
         initTheme();
 
         // State
+        const CALC_SUFFIX_PATTERN = /-up$|-down$/;
+        const ONE_MILLION = 1000000;
+
         let state = {
             poolVolume: 660000,
             poolType: 'pelican',
             selectedCalc: null,
             selectedChemical: null,
             direction: 'increase',
-            currentValue: 0,
-            targetValue: 0,
             inputMemory: {} // Stores {calcBaseName: {current: value, target: value}}
         };
 
@@ -809,10 +810,13 @@
         const chemicalOptions = document.getElementById('chemicalOptions');
         const currentValue = document.getElementById('currentValue');
         const targetValue = document.getElementById('targetValue');
+        const currentValueLabel = document.querySelector('label[for="currentValue"]');
+        const targetValueLabel = document.querySelector('label[for="targetValue"]');
         const result = document.getElementById('result');
         const resultValue = document.getElementById('resultValue');
         const resultUnit = document.getElementById('resultUnit');
         const resultChemical = document.getElementById('resultChemical');
+        const chemicalColorClasses = Object.values(chemicalColors);
 
         // Event listeners
         facilityButtons.forEach(btn => btn.addEventListener('click', handleFacilityToggle));
@@ -833,7 +837,7 @@
         function handleInputChange() {
             // Save to memory for current calculation
             if (state.selectedCalc) {
-                const baseName = state.selectedCalc.replace(/-up$|-down$/, '');
+                const baseName = getCalcBaseName(state.selectedCalc);
                 state.inputMemory[baseName] = {
                     current: currentValue.value,
                     target: targetValue.value
@@ -934,7 +938,7 @@
 
             // Try to preserve selection if equivalent exists in new direction
             if (previousCalc) {
-                const baseName = previousCalc.replace(/-up$|-down$/, '');
+                const baseName = getCalcBaseName(previousCalc);
                 const newCalc = baseName + (direction === 'increase' ? '-up' : '-down');
                 const newButton = document.querySelector(`[data-calc="${newCalc}"]`);
 
@@ -961,7 +965,7 @@
             calculatorInputs.classList.remove('hidden');
 
             // Hide decrease button for CYA (cannot decrease CYA chemically)
-            const baseName = calcType.replace(/-up$|-down$/, '');
+            const baseName = getCalcBaseName(calcType);
             if (baseName === 'cya') {
                 decreaseButton.classList.add('hidden');
             } else {
@@ -969,8 +973,8 @@
             }
 
             // Handle input values - restore from memory or clear
-            const previousBase = previousCalc ? previousCalc.replace(/-up$|-down$/, '') : null;
-            const currentBase = calcType.replace(/-up$|-down$/, '');
+            const previousBase = previousCalc ? getCalcBaseName(previousCalc) : null;
+            const currentBase = baseName;
             if (previousBase !== currentBase) {
                 // Check if we have saved values for this calculation type
                 const savedValues = state.inputMemory[currentBase];
@@ -995,8 +999,8 @@
                 range = poolConfig ? poolConfig.chlorineRange : '1-2.5 mg/L';
             }
 
-            document.querySelector('label[for="currentValue"]').textContent = isPH ? 'Current' : 'Current (mg/L)';
-            document.querySelector('label[for="targetValue"]').textContent = isPH ? `Target (${range})` : `Target (${range})`;
+            currentValueLabel.textContent = isPH ? 'Current' : 'Current (mg/L)';
+            targetValueLabel.textContent = `Target (${range})`;
 
             // Handle chemical options
             const calc = calculations[calcType];
@@ -1051,7 +1055,7 @@
             }
 
             // Check if direction matches the values
-            const baseName = state.selectedCalc.replace(/-up$|-down$/, '');
+            const baseName = getCalcBaseName(state.selectedCalc);
             const paramName = baseName === 'ph' ? 'pH' :
                              baseName === 'cya' ? 'CYA' :
                              baseName.charAt(0).toUpperCase() + baseName.slice(1);
@@ -1067,7 +1071,7 @@
 
             // Formula: (|target - current| / 1,000,000) × poolVolume × multiplier
             const diff = Math.abs(target - current);
-            const amount = (diff / 1000000) * state.poolVolume * state.selectedChemical.multiplier;
+            const amount = (diff / ONE_MILLION) * state.poolVolume * state.selectedChemical.multiplier;
 
             if (amount <= 0) {
                 result.classList.remove('show', 'mismatch');
@@ -1088,7 +1092,11 @@
         }
 
         function clearChemicalColors() {
-            Object.values(chemicalColors).forEach(cls => result.classList.remove(cls));
+            chemicalColorClasses.forEach(cls => result.classList.remove(cls));
+        }
+
+        function getCalcBaseName(calcType) {
+            return calcType.replace(CALC_SUFFIX_PATTERN, '');
         }
 
         function showMismatchMessage(message) {
