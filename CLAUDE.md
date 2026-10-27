@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Single-page web application for calculating pool chemistry dosages. The application is completely self-contained in `index.html` with no external dependencies or build process.
+Single-page web application for calculating pool chemistry dosages. The markup is in `index.html`, the styling is in `styles.css`, and the calculator logic is in `calculator.js`. There are no external dependencies or build process.
 
 **Facilities Managed:**
 - Pelican Park: Main Pool (660,000L), Leisure Pool (76,000L), Spa (12,000L)
@@ -13,7 +13,7 @@ Single-page web application for calculating pool chemistry dosages. The applicat
 ## Architecture
 
 ### State Management
-The application uses a global `state` object (line 561-570) that tracks:
+The application uses a global `state` object that tracks:
 - `poolVolume`: Current pool volume in liters
 - `poolType`: 'pelican', 'cribpoint', or 'custom'
 - `selectedCalc`: Current calculation type (e.g., 'alkalinity-up')
@@ -22,7 +22,7 @@ The application uses a global `state` object (line 561-570) that tracks:
 - `inputMemory`: Preserves user inputs when switching between calculation types
 
 ### Chemical Calculation Formula
-All dosage calculations follow the formula (line 903-904):
+All dosage calculations follow the formula:
 ```
 amount = (|target - current| / 1,000,000) × poolVolume × multiplier
 ```
@@ -30,20 +30,20 @@ amount = (|target - current| / 1,000,000) × poolVolume × multiplier
 Where:
 - `target` and `current` are in mg/L (or pH units)
 - `poolVolume` is in liters
-- `multiplier` is chemical-specific (defined in `calculations` object, line 600-643)
+- `multiplier` is chemical-specific (defined in the `calculations` object in `calculator.js`)
 
 ### Key Data Structures
 
-**calculations object** (line 600-643): Maps calculation types to chemical properties:
+**calculations object**: Maps calculation types to chemical properties:
 - `chemical`: Chemical name
 - `multiplier`: Dosage calculation factor
 - `unit`: 'kg' or 'L'
 
-**pools object** (line 573-579): Maps pool volumes to metadata including chlorine target ranges
+**pools object**: Maps pool volumes to metadata including chlorine target ranges
 
-**chemicalColors object** (line 591-597): Maps chemical names to CSS color classes for result card styling
+**chemicalColors object**: Maps chemical names to CSS color classes for result card styling
 
-**targetRanges object** (line 582-588): Defines acceptable parameter ranges displayed in UI labels
+**targetRanges object**: Defines acceptable parameter ranges displayed in UI labels
 
 ### UI Interaction Flow
 
@@ -55,24 +55,24 @@ Where:
 6. Result displays with chemical-specific color gradient
 
 ### Input Memory Feature
-When switching between related calculations (e.g., 'alkalinity-up' to 'alkalinity-down'), the application preserves the user's current/target inputs by storing them in `state.inputMemory` keyed by the base calculation name (line 676-683, 805-817).
+When switching between related calculations (e.g., 'alkalinity-up' to 'alkalinity-down'), the application preserves the user's current/target inputs by storing them in `state.inputMemory` keyed by the base calculation name.
 
 ## Development
 
 ### Testing Changes
-Open `index.html` directly in a browser. No build process, dev server, or dependencies required.
+Open `index.html` directly in a browser. Keep `styles.css` and `calculator.js` alongside it. No build process, dev server, or dependencies are required.
 
 ### CSS Architecture
-Uses iOS-inspired design with CSS custom properties (line 16-25). Chemical result cards use color-coded gradients defined in lines 309-330. Note that Sodium Thiosulphate uses dark text (line 325-330) due to yellow background.
+The `styles.css` file uses iOS-inspired design with CSS custom properties. Chemical result cards use color-coded gradients defined in `styles.css`. Note that Sodium Thiosulphate uses dark text due to yellow background.
 
 ### Adding New Calculations
 1. Add entry to `calculations` object with chemical, multiplier, and unit
 2. Add button with `data-calc` attribute in appropriate direction section
 3. Add target range to `targetRanges` object
-4. Add chemical color gradient if needed (CSS lines 309-330 and chemicalColors object)
+4. Add chemical color gradient if needed in `styles.css` and the `chemicalColors` object
 
 ### Validation Logic
-The application validates that direction matches user input values (lines 888-900):
+The application validates that direction matches user input values:
 - For "increase": target must be > current
 - For "decrease": current must be > target
 Invalid combinations show an orange warning message instead of a result.
@@ -92,7 +92,7 @@ Invalid combinations show an orange warning message instead of a result.
 
 ## Key Functions
 
-- `calculate()` (line 873): Core calculation logic with direction validation
-- `handleCalcSelection()` (line 792): Manages calculation type switching and input memory restoration
-- `handleFacilityToggle()` (line 694): Switches between Pelican Park and Crib Point
-- `handleDirectionToggle()` (line 758): Switches between increase/decrease with smart preservation of selection
+- `calculate()`: Core calculation logic with direction validation
+- `handleCalcSelection()`: Manages calculation type switching and input memory restoration
+- `handleFacilityToggle()`: Switches between Pelican Park and Crib Point
+- `handleDirectionToggle()`: Switches between increase/decrease with smart preservation of selection
