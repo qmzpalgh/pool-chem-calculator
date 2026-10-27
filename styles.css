@@ -5,30 +5,25 @@
 }
 
 :root {
-    --ios-blue: #007AFF;
-    --ios-gray: #8E8E93;
+    --ios-blue: #0068D6;
+    --ios-gray: #66666C;
     --ios-light-gray: #F2F2F7;
     --ios-separator: #C6C6C8;
     --ios-background: #FFFFFF;
     --ios-grouped-bg: #F2F2F7;
     --ios-text: #000000;
-    --ios-text-secondary: #000000;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
     --input-focus-bg: #E8E8ED;
 }
 
 [data-theme="dark"] {
-    --ios-blue: #0A84FF;
-    --ios-gray: #98989D;
+    --ios-gray: #B0B0B5;
     --ios-light-gray: #2C2C2E;
     --ios-separator: #38383A;
     --ios-background: #1C1C1E;
     --ios-grouped-bg: #000000;
     --ios-text: #FFFFFF;
-    --ios-text-secondary: #FFFFFF;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
     --input-focus-bg: #3A3A3C;
 }
 
@@ -61,12 +56,6 @@ h1 {
     font-weight: 700;
     letter-spacing: -0.4px;
     margin-bottom: 4px;
-}
-
-.subtitle {
-    color: var(--ios-gray);
-    font-size: 15px;
-    font-weight: 400;
 }
 
 .card {
@@ -112,7 +101,7 @@ label {
     letter-spacing: -0.08px;
 }
 
-select, input[type="number"] {
+input[type="number"] {
     width: 100%;
     padding: 11px 16px;
     font-size: 17px;
@@ -126,13 +115,6 @@ select, input[type="number"] {
     color: var(--ios-text);
 }
 
-select {
-    background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23C7C7CC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 44px;
-}
-
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -144,43 +126,13 @@ input[type="number"] {
     font-variant-numeric: tabular-nums;
 }
 
-select:focus, input:focus {
+input:focus {
     outline: none;
     background: var(--input-focus-bg);
 }
 
 .hidden {
     display: none !important;
-}
-
-.reference-list {
-    padding: 0;
-}
-
-.reference-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 0.5px solid var(--ios-separator);
-}
-
-.reference-item:last-child {
-    border-bottom: none;
-}
-
-.reference-label {
-    font-size: 17px;
-    color: var(--ios-text);
-    font-weight: 400;
-}
-
-.reference-value {
-    font-size: 17px;
-    color: var(--ios-gray);
-    font-weight: 400;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
 }
 
 .calculation-grid {
@@ -248,24 +200,17 @@ select:focus, input:focus {
 }
 
 .result-card {
+    display: none;
     background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
     border-radius: 16px;
     color: white;
     text-align: center;
     margin: 0 20px;
-    transform: scale(0.95);
-    opacity: 0;
-    max-height: 0;
-    padding: 0 24px;
-    overflow: hidden;
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 24px;
 }
 
 .result-card.show {
-    transform: scale(1);
-    opacity: 1;
-    max-height: 200px;
-    padding: 32px 24px;
+    display: block;
     margin: 20px 20px 16px;
     animation: resultPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -278,7 +223,6 @@ select:focus, input:focus {
 
 .result-label {
     font-size: 15px;
-    opacity: 0.85;
     margin-bottom: 12px;
     font-weight: 500;
     letter-spacing: -0.2px;
@@ -291,25 +235,55 @@ select:focus, input:focus {
     line-height: 1;
     margin-bottom: 8px;
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
 }
 
 .result-unit {
     font-size: 22px;
-    opacity: 0.9;
     font-weight: 600;
     letter-spacing: -0.3px;
+    margin-left: 5px;
 }
 
 .result-chemical {
     font-size: 17px;
-    opacity: 0.8;
     margin-top: 16px;
     font-weight: 400;
     letter-spacing: -0.2px;
 }
 
+.result-note {
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.result-chemical:empty,
+.result-note:empty {
+    display: none;
+}
+
+.input-hint,
+.calculation-notice {
+    color: var(--ios-text);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.input-hint {
+    margin-top: 12px;
+}
+
+.calculation-notice {
+    margin: 0 20px 20px;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--ios-light-gray);
+}
+
 .result-card.mismatch {
     background: linear-gradient(135deg, #FF9500 0%, #FF6B00 100%);
+    color: #111;
 }
 
 .result-card.mismatch .result-value {
@@ -324,16 +298,16 @@ select:focus, input:focus {
 
 /* Chemical-specific colors */
 .result-card.chem-bicarb {
-    background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+    background: linear-gradient(135deg, #0068D6 0%, #0051D5 100%);
 }
 .result-card.chem-hypo {
-    background: linear-gradient(135deg, #34C759 0%, #248A3D 100%);
+    background: linear-gradient(135deg, #257B39 0%, #1D6C32 100%);
 }
 .result-card.chem-cya {
-    background: linear-gradient(135deg, #AF52DE 0%, #8944AB 100%);
+    background: linear-gradient(135deg, #9740C7 0%, #70338E 100%);
 }
 .result-card.chem-hcl {
-    background: linear-gradient(135deg, #FF3B30 0%, #C41E3A 100%);
+    background: linear-gradient(135deg, #C22C25 0%, #9F1932 100%);
 }
 .result-card.chem-thio {
     background: linear-gradient(135deg, #FFCC00 0%, #E6A800 100%);
@@ -341,51 +315,9 @@ select:focus, input:focus {
 .result-card.chem-thio .result-label,
 .result-card.chem-thio .result-value,
 .result-card.chem-thio .result-unit,
-.result-card.chem-thio .result-chemical {
+.result-card.chem-thio .result-chemical,
+.result-card.chem-thio .result-note {
     color: #1a1a1a;
-}
-
-/* Legend styles */
-.legend-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 16px 20px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    background: var(--ios-light-gray);
-    border-radius: 8px;
-}
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-.legend-color.bicarb { background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%); }
-.legend-color.hypo { background: linear-gradient(135deg, #34C759 0%, #248A3D 100%); }
-.legend-color.cya { background: linear-gradient(135deg, #AF52DE 0%, #8944AB 100%); }
-.legend-color.hcl { background: linear-gradient(135deg, #FF3B30 0%, #C41E3A 100%); }
-.legend-color.thio { background: linear-gradient(135deg, #FFCC00 0%, #E6A800 100%); }
-
-.legend-name {
-    font-size: 13px;
-    color: var(--ios-text);
-    font-weight: 400;
-    line-height: 1.2;
-}
-
-@media (max-width: 480px) {
-    .legend-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 .pool-volume-display {
@@ -396,24 +328,7 @@ select:focus, input:focus {
     font-weight: 400;
 }
 
-.info-badge {
-    display: inline-block;
-    background: rgba(0, 122, 255, 0.1);
-    color: var(--ios-blue);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-left: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 @media (max-width: 480px) {
-    .calculation-grid {
-        grid-template-columns: 1fr;
-    }
-
     h1 {
         font-size: 28px;
     }
@@ -421,6 +336,18 @@ select:focus, input:focus {
     .result-value {
         font-size: 48px;
     }
+}
+
+@media (max-width: 360px) {
+    h1 {
+        font-size: 24px;
+    }
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--ios-blue);
+    outline-offset: 2px;
 }
 
 @media (min-width: 768px) {
@@ -511,8 +438,6 @@ select:focus, input:focus {
 
 .toggle-group,
 .calc-button,
-.legend-item,
-select,
 input[type="number"] {
     transition: background-color 0.3s ease, color 0.3s ease;
 }

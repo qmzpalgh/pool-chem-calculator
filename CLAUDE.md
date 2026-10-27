@@ -1,98 +1,34 @@
-# CLAUDE.md
+# Pool Chemistry Calculator
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+A dependency-free, single-page calculator. Open `index.html` with `styles.css` and `calculator.js` alongside it.
 
-## Project Overview
+## Calculator behavior
 
-Single-page web application for calculating pool chemistry dosages. The markup is in `index.html`, the styling is in `styles.css`, and the calculator logic is in `calculator.js`. There are no external dependencies or build process.
+- Pool changes clear all remembered readings, so measurements from one pool cannot be used for another. Within a pool, current and target readings are remembered by parameter when switching calculations or directions.
+- A custom pool requires a positive volume in litres; it does not inherit a named pool's volume or chlorine reference range.
+- Both readings must be present and non-negative. Equal readings need no adjustment, and a direction mismatch shows a warning.
+- pH doses are not calculated: pool volume and pH readings alone do not determine acid or base demand. The user-provided CO₂ times for both directions are 5 minutes for the spa, 15 for leisure pools, and 30 for main pools. Custom pools have no fixed time. These site-specific times have not been independently verified.
+- CYA is offered at Crib Point, where the pools are outdoors; the custom option must also be an outdoor pool. Victorian guidance specifies an ideal CYA level at or below 30 mg/L and a maximum of 100 mg/L.
+- Results are estimates and assume the product characteristics named in the interface. The acid result is a theoretical total, not a single dose; changing alkalinity with acid can sharply lower pH.
 
-**Facilities Managed:**
-- Pelican Park: Main Pool (660,000L), Leisure Pool (76,000L), Spa (12,000L)
-- Crib Point: Main Pool (440,000L), Leisure Pool (15,000L)
+## Multipliers
 
-## Architecture
+For the supported estimates, amount = |target − current| × volume in litres × multiplier / 1,000,000. Alkalinity is measured as mg/L as CaCO₃.
 
-### State Management
-The application uses a global `state` object that tracks:
-- `poolVolume`: Current pool volume in liters
-- `poolType`: 'pelican', 'cribpoint', or 'custom'
-- `selectedCalc`: Current calculation type (e.g., 'alkalinity-up')
-- `selectedChemical`: Chemical configuration object with multiplier
-- `direction`: 'increase' or 'decrease'
-- `inputMemory`: Preserves user inputs when switching between calculation types
+| Adjustment | Product | Multiplier | Result |
+| --- | --- | ---: | --- |
+| Increase alkalinity | Pure sodium bicarbonate | 1.68 | kg |
+| Increase free chlorine | Sodium hypochlorite, 125 g/L available chlorine | 8 | L |
+| Increase CYA | Pure cyanuric acid | 1 | kg |
+| Decrease alkalinity | Hydrochloric acid 33% | 2 | L, estimated total |
+| Decrease free chlorine | Sodium thiosulphate | 1 | kg |
 
-### Chemical Calculation Formula
-All dosage calculations follow the formula:
-```
-amount = (|target - current| / 1,000,000) × poolVolume × multiplier
-```
+The bicarbonate factor follows the equivalent-weight ratio (84/50) and the 1.4 lb per 10,000 US gallons per 10 mg/L example in the [Arkansas pool operator dosage chart](https://healthy.arkansas.gov/wp-content/uploads/Guidelines_for_Pool_and_Spa_Operators.pdf). The older [Victorian pool operators' handbook](https://vgls.sdp.sirsidynix.net.au/client/search/asset/1266300) gives a coarser bicarbonate approximation and the thiosulphate rate used here. Check the specific product label: other published thiosulphate rates differ.
 
-Where:
-- `target` and `current` are in mg/L (or pH units)
-- `poolVolume` is in liters
-- `multiplier` is chemical-specific (defined in the `calculations` object in `calculator.js`)
+The hypochlorite factor matches the [NSW Health dosage table](https://www.health.nsw.gov.au/environment/water/Documents/chlorine-ready-reckoner-tables.pdf). The acid factor is an approximation consistent with the [Lake County operator manual](https://www.lakecountyil.gov/DocumentCenter/View/77109/LCHD---Swimming-Facility-Manual---August-26-2024) for roughly 31% acid; actual product strength and water chemistry matter. Do not treat the total as a safe single addition. The [Victorian water quality guidelines](https://www.health.vic.gov.au/sites/default/files/migrated/files/collections/policies-and-guidelines/w/water-quality-guidelines-for-public-aquatic-facilities---managing-public-health-risks---2020.pdf) give the CYA guidance. A [pool chemistry paper](https://www.poolhelp.com/wp-content/uploads/2017/05/JSPSI_V5N1_pp39-56.pdf) describes the additional information used for pH adjustments and demand tests.
 
-### Key Data Structures
+Named pool volumes and chlorine reference ranges are inherited site settings; confirm them with the facility's current water quality risk management plan before relying on them.
 
-**calculations object**: Maps calculation types to chemical properties:
-- `chemical`: Chemical name
-- `multiplier`: Dosage calculation factor
-- `unit`: 'kg' or 'L'
+## Browser tests
 
-**pools object**: Maps pool volumes to metadata including chlorine target ranges
-
-**chemicalColors object**: Maps chemical names to CSS color classes for result card styling
-
-**targetRanges object**: Defines acceptable parameter ranges displayed in UI labels
-
-### UI Interaction Flow
-
-1. User selects facility (Pelican Park/Crib Point) → toggles pool options visibility
-2. User selects pool → updates `state.poolVolume` and shows/hides CYA option (Crib Point only)
-3. User selects direction (Increase/Decrease) → switches available calculation options
-4. User selects calculation type → shows input fields with appropriate labels
-5. User enters current/target values → triggers `calculate()` which validates direction matches values
-6. Result displays with chemical-specific color gradient
-
-### Input Memory Feature
-When switching between related calculations (e.g., 'alkalinity-up' to 'alkalinity-down'), the application preserves the user's current/target inputs by storing them in `state.inputMemory` keyed by the base calculation name.
-
-## Development
-
-### Testing Changes
-Open `index.html` directly in a browser. Keep `styles.css` and `calculator.js` alongside it. No build process, dev server, or dependencies are required.
-
-### CSS Architecture
-The `styles.css` file uses iOS-inspired design with CSS custom properties. Chemical result cards use color-coded gradients defined in `styles.css`. Note that Sodium Thiosulphate uses dark text due to yellow background.
-
-### Adding New Calculations
-1. Add entry to `calculations` object with chemical, multiplier, and unit
-2. Add button with `data-calc` attribute in appropriate direction section
-3. Add target range to `targetRanges` object
-4. Add chemical color gradient if needed in `styles.css` and the `chemicalColors` object
-
-### Validation Logic
-The application validates that direction matches user input values:
-- For "increase": target must be > current
-- For "decrease": current must be > target
-Invalid combinations show an orange warning message instead of a result.
-
-## Chemical Multipliers
-
-**Increase:**
-- Alkalinity: 2 (Sodium Bicarbonate, kg)
-- Free Chlorine: 8 (Sodium Hypochlorite 12.5%, L)
-- pH: 800 (Sodium Bicarbonate, kg)
-- CYA: 1 (Isocyanuric Acid, kg) - Crib Point only
-
-**Decrease:**
-- Alkalinity: 2 (HCl 33%, L)
-- Free Chlorine: 1 (Sodium Thiosulphate, kg)
-- pH: 0.833 (HCl 33%, L)
-
-## Key Functions
-
-- `calculate()`: Core calculation logic with direction validation
-- `handleCalcSelection()`: Manages calculation type switching and input memory restoration
-- `handleFacilityToggle()`: Switches between Pelican Park and Crib Point
-- `handleDirectionToggle()`: Switches between increase/decrease with smart preservation of selection
+Serve the repository locally, for example with `python -m http.server 8000 --bind 127.0.0.1`, then open `http://127.0.0.1:8000/tests/calculator.html`. The test page reports each result and requires no test framework.

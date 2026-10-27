@@ -14,11 +14,10 @@
             <div class="header-row">
                 <div>
                     <h1>Pool Chemistry</h1>
-                    <p class="subtitle">Calculate chemical dosages</p>
                 </div>
                 <div class="theme-toggle-wrapper">
                     <span class="theme-toggle-label">Dark</span>
-                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Dark mode" aria-pressed="false">
                         <span class="theme-toggle-knob"></span>
                     </button>
                 </div>
@@ -55,7 +54,7 @@
 
                 <div class="form-group hidden" id="customVolumeGroup" style="margin-top: 16px;">
                     <label for="customVolume">Custom Volume (L)</label>
-                    <input type="number" id="customVolume" placeholder="Enter volume in liters" min="0" step="1000">
+                    <input type="number" id="customVolume" placeholder="Volume in litres" min="0" step="any" inputmode="decimal">
                 </div>
             </div>
         </div>
@@ -86,58 +85,32 @@
             </div>
 
             <div id="calculatorInputs" class="hidden">
-                <div id="chemicalOptions" class="hidden" style="padding: 0 20px 16px;"></div>
-
                 <div class="card-body">
                     <div class="input-row">
                         <div class="form-group">
                             <label for="currentValue">Current (mg/L)</label>
-                            <input type="number" id="currentValue" placeholder="0" step="0.1" min="0">
+                            <input type="number" id="currentValue" placeholder="Enter reading" step="any" min="0" inputmode="decimal">
                         </div>
                         <div class="form-group">
                             <label for="targetValue">Target (mg/L)</label>
-                            <input type="number" id="targetValue" placeholder="0" step="0.1" min="0">
+                            <input type="number" id="targetValue" placeholder="Enter target" step="any" min="0" inputmode="decimal">
                         </div>
                     </div>
+                    <p class="input-hint" id="targetHint"></p>
+                    <p class="input-hint">Readings reset when changing pools.</p>
                 </div>
             </div>
 
-            <div id="result" class="result-card">
-                <div class="result-label">Add</div>
+            <div class="calculation-notice hidden" id="calculationNotice" role="status"></div>
+
+            <div id="result" class="result-card" aria-live="polite">
+                <div class="result-label" id="resultLabel">Estimated amount</div>
                 <div>
                     <span class="result-value" id="resultValue">0</span>
                     <span class="result-unit" id="resultUnit">kg</span>
                 </div>
                 <div class="result-chemical" id="resultChemical">Sodium Bicarbonate</div>
-            </div>
-        </div>
-
-        <!-- Chemical Legend -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Chemical Legend</h2>
-            </div>
-            <div class="legend-grid">
-                <div class="legend-item">
-                    <div class="legend-color bicarb"></div>
-                    <span class="legend-name">Sodium Bicarbonate</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color hypo"></div>
-                    <span class="legend-name">Sodium Hypochlorite 12.5%</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color cya"></div>
-                    <span class="legend-name">Isocyanuric Acid</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color hcl"></div>
-                    <span class="legend-name">HCl 33%</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color thio"></div>
-                    <span class="legend-name">Sodium Thiosulphate</span>
-                </div>
+                <p class="result-note" id="resultNote"></p>
             </div>
         </div>
     </div>
