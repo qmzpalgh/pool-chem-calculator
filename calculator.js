@@ -382,13 +382,13 @@ function calculate() {
         return;
     }
 
-    const current = parseFloat(currentValue.value) || 0;
-    const target = parseFloat(targetValue.value) || 0;
-
-    if (current === 0 && target === 0) {
+    if (currentValue.value === '' || targetValue.value === '') {
         result.classList.remove('show', 'mismatch');
         return;
     }
+
+    const current = parseFloat(currentValue.value);
+    const target = parseFloat(targetValue.value);
 
     // Check if direction matches the values
     const baseName = getCalcBaseName(state.selectedCalc);
