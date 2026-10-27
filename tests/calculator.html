@@ -159,11 +159,34 @@
             click(doc, '[data-calc="alkalinity-up"]');
             readings(doc, '80', '100');
             click(doc, '[data-calc="ph-up"]');
-            assert(visible(doc, '#calculationNotice') && text(doc, '#calculationNotice').includes('base demand'), 'Expected base demand guidance');
+            assert(visible(doc, '#calculationNotice') && text(doc, '#calculationNotice').includes('off for 30 minutes'), 'Expected CO₂-off guidance');
+            assert(text(doc, '#calculationNotice').includes('alkalinity') && text(doc, '#calculationNotice').includes('free chlorine'), 'Expected alkalinity and chlorine checks');
             assert(!visible(doc, '#result') && !visible(doc, '#calculatorInputs'), 'pH must not show a dose');
             click(doc, '[data-direction="decrease"]');
-            assert(text(doc, '#calculationNotice').includes('acid demand'), 'Expected acid demand guidance');
+            assert(text(doc, '#calculationNotice').includes('on for 30 minutes'), 'Expected CO₂-on guidance');
+            assert(text(doc, '#calculationNotice').includes('hydrochloric acid') && text(doc, '#calculationNotice').includes('acid demand'), 'Expected acid fallback guidance');
             assert(!visible(doc, '#result'), 'pH decrease must not show a dose');
+        });
+
+        test('pH CO₂ guidance updates for each pool and direction', (doc) => {
+            click(doc, '[data-calc="ph-up"]');
+            const checkPool = (selector, minutes) => {
+                click(doc, selector);
+                assert(text(doc, '#calculationNotice').includes(`off for ${minutes} minutes`), 'Wrong CO₂-off time for ' + selector);
+                click(doc, '[data-direction="decrease"]');
+                assert(text(doc, '#calculationNotice').includes(`on for ${minutes} minutes`), 'Wrong CO₂-on time for ' + selector);
+                click(doc, '[data-direction="increase"]');
+            };
+            checkPool('#pelicanPools [data-pool="660000"]', 30);
+            checkPool('#pelicanPools [data-pool="76000"]', 15);
+            checkPool('#pelicanPools [data-pool="12000"]', 5);
+            click(doc, '[data-facility="cribpoint"]');
+            checkPool('#cribpointPools [data-pool="440000"]', 30);
+            checkPool('#cribpointPools [data-pool="15000"]', 15);
+            click(doc, '#cribpointPools [data-pool="custom"]');
+            assert(text(doc, '#calculationNotice').includes('custom pool') && text(doc, '#calculationNotice').includes('dosing off'), 'Custom pool should not inherit a fixed time');
+            click(doc, '[data-direction="decrease"]');
+            assert(text(doc, '#calculationNotice').includes('custom pool') && text(doc, '#calculationNotice').includes('dosing on'), 'Custom pool should not inherit a fixed time');
         });
 
         test('CYA guidance, bounds, and facility change', (doc) => {

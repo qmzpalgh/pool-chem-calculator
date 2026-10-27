@@ -7,7 +7,7 @@ A dependency-free, single-page calculator. Open `index.html` with `styles.css` a
 - Pool changes clear all remembered readings, so measurements from one pool cannot be used for another. Within a pool, current and target readings are remembered by parameter when switching calculations or directions.
 - A custom pool requires a positive volume in litres; it does not inherit a named pool's volume or chlorine reference range.
 - Both readings must be present and non-negative. Equal readings need no adjustment, and a direction mismatch shows a warning.
-- pH doses are not calculated: pool volume and pH readings alone do not determine acid or base demand.
+- pH doses are not calculated: pool volume and pH readings alone do not determine acid or base demand. The user-provided CO₂ times for both directions are 5 minutes for the spa, 15 for leisure pools, and 30 for main pools. Custom pools have no fixed time. These site-specific times have not been independently verified.
 - CYA is offered at Crib Point, where the pools are outdoors; the custom option must also be an outdoor pool. Victorian guidance specifies an ideal CYA level at or below 30 mg/L and a maximum of 100 mg/L.
 - Results are estimates and assume the product characteristics named in the interface. The acid result is a theoretical total, not a single dose; changing alkalinity with acid can sharply lower pH.
 

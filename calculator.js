@@ -35,11 +35,11 @@ const state = {
 };
 
 const pools = {
-    '660000': { chlorineRange: '1–2.5 mg/L' },
-    '76000': { chlorineRange: '1–2.5 mg/L' },
-    '12000': { chlorineRange: '3–4.5 mg/L' },
-    '440000': { chlorineRange: '2–3.5 mg/L' },
-    '15000': { chlorineRange: '2–3.5 mg/L' }
+    '660000': { chlorineRange: '1–2.5 mg/L', co2Minutes: 30 },
+    '76000': { chlorineRange: '1–2.5 mg/L', co2Minutes: 15 },
+    '12000': { chlorineRange: '3–4.5 mg/L', co2Minutes: 5 },
+    '440000': { chlorineRange: '2–3.5 mg/L', co2Minutes: 30 },
+    '15000': { chlorineRange: '2–3.5 mg/L', co2Minutes: 15 }
 };
 
 // Multipliers apply to mg/L change × litres / 1,000,000.
@@ -81,10 +81,10 @@ const calculations = {
         note: 'Overdosing can prevent a chlorine residual. Check your product dosage and retest before reopening.'
     },
     'ph-up': {
-        notice: 'pH doses depend on alkalinity and other water chemistry. Use a base demand test and follow your site procedure.'
+        notice: 'Check alkalinity; low alkalinity can contribute to low or unstable pH. Check free chlorine too.'
     },
     'ph-down': {
-        notice: 'pH doses depend on alkalinity and other water chemistry. Use an acid demand test and follow your site procedure.'
+        notice: 'If CO₂ is not working, use hydrochloric acid. Use an acid demand test to determine the dose.'
     }
 };
 
@@ -168,6 +168,7 @@ poolButtons.forEach((button) => button.addEventListener('click', () => {
         resetCalculator();
     } else {
         updateTargetHint();
+        updateCalculationNotice();
         calculate();
     }
 }));
@@ -213,7 +214,7 @@ calcButtons.forEach((button) => button.addEventListener('click', () => {
 
     calculatorInputs.classList.toggle('hidden', Boolean(config.notice));
     calculationNotice.classList.toggle('hidden', !config.notice);
-    calculationNotice.textContent = config.notice || '';
+    updateCalculationNotice();
     updateTargetHint();
     calculate();
 }));
@@ -237,6 +238,25 @@ targetValue.addEventListener('keydown', (event) => {
 
 function getBaseName(calc) {
     return calc.replace(/-(up|down)$/, '');
+}
+
+function updateCalculationNotice() {
+    const config = calculations[state.selectedCalc];
+    if (!config || !config.notice) {
+        calculationNotice.textContent = '';
+        return;
+    }
+
+    if (state.selectedCalc === 'ph-up' || state.selectedCalc === 'ph-down') {
+        const minutes = pools[state.pool]?.co2Minutes;
+        const setting = state.selectedCalc === 'ph-up' ? 'off' : 'on';
+        const firstStep = minutes
+            ? `Turn CO₂ dosing ${setting} for ${minutes} minutes, then check pH.`
+            : `For this custom pool, check how long to turn CO₂ dosing ${setting}, then check pH.`;
+        calculationNotice.textContent = `${firstStep} ${config.notice}`;
+    } else {
+        calculationNotice.textContent = config.notice;
+    }
 }
 
 function updateTargetHint() {
