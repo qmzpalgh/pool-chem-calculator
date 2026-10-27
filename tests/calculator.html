@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Pool calculator browser tests</title>
+</head>
+<body>
+    <h1>Pool calculator browser tests</h1>
+    <pre id="results">Running…</pre>
+    <iframe id="calculator" title="Calculator under test" src="../index.html" width="600" height="300"></iframe>
+    <script>
+        const frame = document.getElementById('calculator');
+        const output = document.getElementById('results');
+        const tests = [];
+
+        function test(name, run) {
+            tests.push({ name, run });
+        }
+
+        function assert(condition, message) {
+            if (!condition) throw new Error(message);
+        }
+
+        function click(doc, selector) {
+            const element = doc.querySelector(selector);
+            assert(element, 'Missing ' + selector);
+            assert(element.getClientRects().length > 0, 'Not visible: ' + selector);
+            element.click();
+        }
+
+        function fill(doc, selector, value) {
+            const input = doc.querySelector(selector);
+            input.value = value;
+            input.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true }));
+        }
+
+        function visible(doc, selector) {
+            return doc.querySelector(selector).getClientRects().length > 0;
+        }
+
+        function text(doc, selector) {
+            return doc.querySelector(selector).textContent;
+        }
+
+        function amount(doc, value, unit) {
+            assert(visible(doc, '#result'), 'Expected a result');
+            assert(text(doc, '#resultValue') === value, 'Expected ' + value + ', got ' + text(doc, '#resultValue'));
+            assert(text(doc, '#resultUnit') === unit, 'Expected unit ' + unit);
+        }
+
+        function readings(doc, current, target) {
+            fill(doc, '#currentValue', current);
+            fill(doc, '#targetValue', target);
+        }
+
+        test('Empty readings, zero, and bicarbonate dose', (doc) => {
+            click(doc, '[data-calc="alkalinity-up"]');
+            fill(doc, '#currentValue', '0');
+            assert(!visible(doc, '#result'), 'A missing target must not produce a dose');
+            fill(doc, '#targetValue', '10');
+            amount(doc, '11.09', 'kg');
+            assert(text(doc, '#resultChemical') === 'Sodium bicarbonate', 'Wrong chemical');
+            fill(doc, '#currentValue', '');
+            assert(!visible(doc, '#result'), 'Clearing a reading must hide the dose');
+        });
+
+        test('Direction, equal and negative readings', (doc) => {
+            click(doc, '[data-calc="chlorine-up"]');
+            readings(doc, '2', '1');
+            assert(text(doc, '#resultValue').includes('target must be higher'), 'Expected increase warning');
+            readings(doc, '2', '2');
+            assert(text(doc, '#resultLabel') === 'No adjustment needed', 'Expected equal-reading message');
+            readings(doc, '-1', '2');
+            assert(text(doc, '#resultValue').includes('non-negative'), 'Expected negative-reading warning');
+            readings(doc, '2', '0');
+            click(doc, '[data-direction="decrease"]');
+            amount(doc, '1.32', 'kg');
+            readings(doc, '1', '2');
+            assert(text(doc, '#resultValue').includes('target must be lower'), 'Expected decrease warning');
+        });
+
+        test('Custom volume is required and accepts decimals', (doc) => {
+            click(doc, '#pelicanPools [data-pool="custom"]');
+            click(doc, '[data-calc="chlorine-up"]');
+            readings(doc, '0', '1');
+            assert(text(doc, '#resultValue').includes('volume greater than zero'), 'Blank volume must not reuse the main pool');
+            fill(doc, '#customVolume', '0');
+            assert(text(doc, '#resultValue').includes('volume greater than zero'), 'Zero volume must not produce a dose');
+            fill(doc, '#customVolume', '-1000');
+            assert(text(doc, '#resultValue').includes('volume greater than zero'), 'Negative volume must not produce a dose');
+            fill(doc, '#customVolume', '1000.5');
+            amount(doc, '8', 'mL');
+            fill(doc, '#customVolume', '0.001');
+            assert(Number(text(doc, '#resultValue').replaceAll(',', '')) > 0, 'A small dose must not round to zero');
+            assert(text(doc, '#resultUnit') === 'mL', 'Small liquid dose should use mL');
+            fill(doc, '#customVolume', '');
+            assert(text(doc, '#resultValue').includes('volume greater than zero'), 'Clearing volume must hide the dose');
+        });
+
+        test('Pool changes clear readings and update pool references', (doc) => {
+            click(doc, '[data-calc="chlorine-up"]');
+            readings(doc, '1', '2');
+            click(doc, '#pelicanPools [data-pool="12000"]');
+            assert(doc.querySelector('#currentValue').value === '' && doc.querySelector('#targetValue').value === '', 'Readings carried into another pool');
+            assert(!visible(doc, '#result'), 'Changing pools must hide the old dose');
+            assert(text(doc, '#targetHint').includes('3–4.5 mg/L'), 'Spa reference did not update');
+            click(doc, '#pelicanPools [data-pool="custom"]');
+            fill(doc, '#customVolume', '660000');
+            assert(text(doc, '#targetHint').includes('site procedure'), 'A custom volume must not inherit a named pool reference');
+            click(doc, '[data-facility="cribpoint"]');
+            assert(text(doc, '#targetHint').includes('2–3.5 mg/L'), 'Facility reference did not update');
+        });
+
+        test('Every named pool selects its own volume', (doc) => {
+            const checkPool = (selector, volume) => {
+                click(doc, selector);
+                assert(text(doc, '#poolVolume') === volume + ' L', 'Wrong volume for ' + selector);
+                assert(doc.querySelector(selector).getAttribute('aria-pressed') === 'true', 'Selected pool is not announced');
+            };
+            checkPool('#pelicanPools [data-pool="660000"]', '660,000');
+            checkPool('#pelicanPools [data-pool="76000"]', '76,000');
+            checkPool('#pelicanPools [data-pool="12000"]', '12,000');
+            click(doc, '[data-facility="cribpoint"]');
+            checkPool('#cribpointPools [data-pool="440000"]', '440,000');
+            checkPool('#cribpointPools [data-pool="15000"]', '15,000');
+        });
+
+        test('Custom volume does not carry to another facility', (doc) => {
+            click(doc, '#pelicanPools [data-pool="custom"]');
+            fill(doc, '#customVolume', '12345.5');
+            click(doc, '#pelicanPools [data-pool="660000"]');
+            click(doc, '#pelicanPools [data-pool="custom"]');
+            assert(doc.querySelector('#customVolume').value === '12345.5', 'Custom volume was not remembered');
+            click(doc, '[data-facility="cribpoint"]');
+            click(doc, '#cribpointPools [data-pool="custom"]');
+            assert(doc.querySelector('#customVolume').value === '', 'Custom volume carried into a different facility');
+        });
+
+        test('Readings survive calculation and direction switches within a pool', (doc) => {
+            click(doc, '[data-calc="alkalinity-up"]');
+            readings(doc, '80', '100');
+            click(doc, '[data-calc="chlorine-up"]');
+            assert(doc.querySelector('#currentValue').value === '', 'Different calculations should start empty');
+            readings(doc, '1', '2');
+            click(doc, '[data-calc="alkalinity-up"]');
+            assert(doc.querySelector('#currentValue').value === '80' && doc.querySelector('#targetValue').value === '100', 'Alkalinity readings were not restored');
+            click(doc, '[data-direction="decrease"]');
+            assert(text(doc, '#resultValue').includes('target must be lower'), 'Direction switch must validate restored values');
+            readings(doc, '100', '80');
+            amount(doc, '26.40', 'L');
+            assert(text(doc, '#resultLabel').includes('not a single dose'), 'Acid total must be clearly labelled');
+            assert(text(doc, '#resultNote').includes('lower pH'), 'Acid warning is missing');
+            click(doc, '[data-direction="increase"]');
+            assert(doc.querySelector('#currentValue').value === '100' && doc.querySelector('#targetValue').value === '80', 'Direction switch lost readings');
+            assert(text(doc, '#resultValue').includes('target must be higher'), 'Direction switch must not invert readings');
+        });
+
+        test('pH never displays an unsupported dose', (doc) => {
+            click(doc, '[data-calc="alkalinity-up"]');
+            readings(doc, '80', '100');
+            click(doc, '[data-calc="ph-up"]');
+            assert(visible(doc, '#calculationNotice') && text(doc, '#calculationNotice').includes('base demand'), 'Expected base demand guidance');
+            assert(!visible(doc, '#result') && !visible(doc, '#calculatorInputs'), 'pH must not show a dose');
+            click(doc, '[data-direction="decrease"]');
+            assert(text(doc, '#calculationNotice').includes('acid demand'), 'Expected acid demand guidance');
+            assert(!visible(doc, '#result'), 'pH decrease must not show a dose');
+        });
+
+        test('CYA guidance, bounds, and facility change', (doc) => {
+            click(doc, '[data-facility="cribpoint"]');
+            click(doc, '#cyaButton');
+            assert(text(doc, '#targetHint').includes('at or below 30'), 'CYA guidance should not present 30 as a minimum');
+            readings(doc, '0', '100.1');
+            assert(text(doc, '#resultValue').includes('cannot exceed 100'), 'Expected CYA limit warning');
+            readings(doc, '0', '30');
+            amount(doc, '13.20', 'kg');
+            assert(text(doc, '#resultNote').includes('outdoor'), 'CYA outdoor warning is missing');
+            click(doc, '[data-facility="pelican"]');
+            assert(!visible(doc, '#result') && !visible(doc, '#calculatorInputs'), 'CYA must reset when unavailable');
+            assert(visible(doc, '[data-direction="decrease"]'), 'Decrease must remain available');
+            assert(!visible(doc, '#cyaButton'), 'CYA must be hidden at Pelican Park');
+        });
+
+        test('CYA can switch to the decrease options', (doc) => {
+            click(doc, '[data-facility="cribpoint"]');
+            click(doc, '#cyaButton');
+            readings(doc, '0', '30');
+            click(doc, '[data-direction="decrease"]');
+            assert(!visible(doc, '#result'), 'CYA dose must be cleared');
+            assert(visible(doc, '[data-calc="chlorine-down"]'), 'Decrease options must be available');
+            click(doc, '[data-calc="chlorine-down"]');
+            readings(doc, '2', '1');
+            amount(doc, '440', 'g');
+        });
+
+        test('Theme selection updates its accessible state and is remembered', (doc) => {
+            const button = doc.querySelector('#themeToggle');
+            const wasDark = button.getAttribute('aria-pressed') === 'true';
+            button.click();
+            assert(button.getAttribute('aria-pressed') === String(!wasDark), 'Theme state was not updated');
+            assert(frame.contentWindow.localStorage.getItem('theme') === (wasDark ? 'light' : 'dark'), 'Theme preference was not saved');
+        });
+
+        async function runTests() {
+            const lines = [];
+            let failures = 0;
+            for (const [index, item] of tests.entries()) {
+                const loaded = new Promise((resolve) => frame.addEventListener('load', resolve, { once: true }));
+                frame.src = '../index.html?test=' + index;
+                await loaded;
+                try {
+                    item.run(frame.contentDocument);
+                    lines.push('PASS ' + item.name);
+                } catch (error) {
+                    failures++;
+                    lines.push('FAIL ' + item.name + ': ' + error.message);
+                }
+            }
+            output.textContent = lines.join('\n') + '\n\n' + (failures ? failures + ' failed' : 'All tests passed');
+            document.body.dataset.status = failures ? 'failed' : 'passed';
+        }
+        runTests();
+    </script>
+</body>
+</html>
