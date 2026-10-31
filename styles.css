@@ -112,7 +112,7 @@ label {
     letter-spacing: -0.08px;
 }
 
-select, input[type="number"] {
+select, input[type="number"], input[type="text"] {
     width: 100%;
     padding: 11px 16px;
     font-size: 17px;
@@ -264,7 +264,7 @@ select:focus, input:focus {
 .result-card.show {
     transform: scale(1);
     opacity: 1;
-    max-height: 200px;
+    max-height: 500px;
     padding: 32px 24px;
     margin: 20px 20px 16px;
     animation: resultPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -306,6 +306,98 @@ select:focus, input:focus {
     margin-top: 16px;
     font-weight: 400;
     letter-spacing: -0.2px;
+}
+
+.field-hint,
+.notes-hint,
+.notes-empty,
+.notes-status,
+.note-meta {
+    color: var(--ios-gray);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.field-hint {
+    margin-top: 8px;
+}
+
+.save-note-button,
+.notes-action,
+.note-remove {
+    min-height: 44px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+}
+
+.save-note-button {
+    margin-top: 18px;
+    padding: 10px 18px;
+    background: white;
+    color: #1a1a1a;
+}
+
+.save-status {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.save-status:empty,
+.notes-status:empty {
+    display: none;
+}
+
+.result-card.chem-thio .save-status {
+    color: #1a1a1a;
+}
+
+.notes-empty,
+.notes-status {
+    margin-top: 14px;
+}
+
+.notes-list {
+    list-style: none;
+}
+
+.note-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ios-separator);
+    overflow-wrap: anywhere;
+}
+
+.note-pool {
+    font-size: 17px;
+}
+
+.note-dose {
+    margin: 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.note-remove,
+.notes-action {
+    padding: 10px 14px;
+    background: var(--ios-light-gray);
+    color: var(--ios-text);
+}
+
+.note-remove {
+    margin-top: 10px;
+}
+
+.notes-action {
+    margin-top: 16px;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--ios-blue);
+    outline-offset: 2px;
 }
 
 .result-card.mismatch {
@@ -515,4 +607,36 @@ select:focus, input:focus {
 select,
 input[type="number"] {
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+
+    header,
+    .container > .card:not(#notes),
+    #notes button,
+    .notes-hint,
+    .notes-status {
+        display: none !important;
+    }
+
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+
+    #notes {
+        --ios-text: black;
+        --ios-gray: #444;
+        background: white;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .note-item {
+        break-inside: avoid;
+    }
 }

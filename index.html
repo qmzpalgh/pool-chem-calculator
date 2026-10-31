@@ -53,9 +53,16 @@
             <div class="card-body" style="padding-top: 0;">
                 <span class="pool-volume-display" id="poolVolume" style="display: block; text-align: center;">660,000 L</span>
 
-                <div class="form-group hidden" id="customVolumeGroup" style="margin-top: 16px;">
-                    <label for="customVolume">Custom Volume (L)</label>
-                    <input type="number" id="customVolume" placeholder="Enter volume in liters" min="0" step="1000">
+                <div class="hidden" id="customVolumeGroup" style="margin-top: 16px;">
+                    <div class="form-group">
+                        <label for="customVolume">Custom Volume (L)</label>
+                        <input type="number" id="customVolume" placeholder="Enter volume in litres" min="0" step="any" inputmode="decimal">
+                    </div>
+                    <div class="form-group">
+                        <label for="customPoolName">Custom Pool Name</label>
+                        <input type="text" id="customPoolName" placeholder="e.g. Training Pool" maxlength="80" aria-describedby="customPoolNameHint">
+                        <p class="field-hint" id="customPoolNameHint">A name is needed to save this pool to notes.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,6 +106,7 @@
                             <input type="number" id="targetValue" placeholder="0" step="0.1" min="0">
                         </div>
                     </div>
+                    <p class="field-hint">Readings reset when changing pools.</p>
                 </div>
             </div>
 
@@ -109,8 +117,23 @@
                     <span class="result-unit" id="resultUnit">kg</span>
                 </div>
                 <div class="result-chemical" id="resultChemical">Sodium Bicarbonate</div>
+                <button type="button" class="save-note-button hidden" id="saveNote">Save to notes</button>
+                <p class="save-status" id="saveStatus" role="status"></p>
             </div>
         </div>
+
+        <section class="card" id="notes" aria-labelledby="notesTitle">
+            <div class="card-header">
+                <h2 class="card-title" id="notesTitle">Notes</h2>
+            </div>
+            <div class="card-body">
+                <p class="notes-hint">Saved on this device. Remove amounts when you have finished with them.</p>
+                <p class="notes-empty" id="notesEmpty">No amounts saved yet. Calculate an adjustment and tap Save to notes.</p>
+                <ul class="notes-list" id="notesList"></ul>
+                <p class="notes-status" id="notesStatus" role="status"></p>
+                <button type="button" class="notes-action hidden" id="printNotes">Print notes</button>
+            </div>
+        </section>
 
         <!-- Chemical Legend -->
         <div class="card">
