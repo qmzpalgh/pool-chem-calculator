@@ -1,8 +1,24 @@
 // Theme toggle functionality
 const themeToggle = document.getElementById('themeToggle');
 
+function getSavedTheme() {
+    try {
+        return localStorage.getItem('theme');
+    } catch (error) {
+        return null;
+    }
+}
+
+function saveTheme(theme) {
+    try {
+        localStorage.setItem('theme', theme);
+    } catch (error) {
+        // The theme can still be changed for this page when storage is unavailable.
+    }
+}
+
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = getSavedTheme();
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
@@ -17,11 +33,11 @@ function toggleTheme() {
     if (isDark) {
         document.documentElement.removeAttribute('data-theme');
         themeToggle.classList.remove('active');
-        localStorage.setItem('theme', 'light');
+        saveTheme('light');
     } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeToggle.classList.add('active');
-        localStorage.setItem('theme', 'dark');
+        saveTheme('dark');
     }
 }
 
@@ -29,7 +45,7 @@ themeToggle.addEventListener('click', toggleTheme);
 
 // Listen for system theme changes
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
+    if (!getSavedTheme()) {
         if (e.matches) {
             document.documentElement.setAttribute('data-theme', 'dark');
             themeToggle.classList.add('active');
@@ -50,6 +66,9 @@ const ONE_MILLION = 1000000;
 let state = {
     poolVolume: 660000,
     poolType: 'pelican',
+    facility: 'pelican',
+    selectedFacility: 'pelican',
+    selectedPool: '660000',
     selectedCalc: null,
     selectedChemical: null,
     direction: 'increase',
@@ -135,6 +154,7 @@ const pelicanPools = document.getElementById('pelicanPools');
 const cribpointPools = document.getElementById('cribpointPools');
 const customVolumeGroup = document.getElementById('customVolumeGroup');
 const customVolume = document.getElementById('customVolume');
+const customPoolName = document.getElementById('customPoolName');
 const poolVolume = document.getElementById('poolVolume');
 const cyaButton = document.getElementById('cyaButton');
 const directionToggleButtons = document.querySelectorAll('[data-direction]');
@@ -152,15 +172,61 @@ const result = document.getElementById('result');
 const resultValue = document.getElementById('resultValue');
 const resultUnit = document.getElementById('resultUnit');
 const resultChemical = document.getElementById('resultChemical');
+const saveNote = document.getElementById('saveNote');
+const saveStatus = document.getElementById('saveStatus');
+const notesList = document.getElementById('notesList');
+const notesEmpty = document.getElementById('notesEmpty');
+const notesStatus = document.getElementById('notesStatus');
+const printNotes = document.getElementById('printNotes');
 const chemicalColorClasses = Object.values(chemicalColors);
+
+const notesStorageKey = 'poolChemicalNotes';
+let savedNotes = [];
+let notesAvailable = true;
+let readingsCustomPoolName = '';
+try {
+    savedNotes = JSON.parse(localStorage.getItem(notesStorageKey) || '[]');
+    if (!Array.isArray(savedNotes)) throw new Error('Invalid saved notes');
+} catch (error) {
+    savedNotes = [];
+    notesAvailable = false;
+    notesStatus.textContent = 'Saved notes could not be loaded on this device.';
+}
+renderNotes();
+window.addEventListener('storage', (event) => {
+    if (event.key !== notesStorageKey && event.key !== null) return;
+    try {
+        const notes = JSON.parse(event.key === null ? '[]' : (event.newValue || '[]'));
+        if (!Array.isArray(notes)) throw new Error('Invalid saved notes');
+        savedNotes = notes;
+        notesAvailable = true;
+        notesStatus.textContent = '';
+    } catch (error) {
+        savedNotes = [];
+        notesAvailable = false;
+        notesStatus.textContent = 'Saved notes could not be loaded on this device.';
+    }
+    renderNotes();
+});
 
 // Event listeners
 facilityButtons.forEach(btn => btn.addEventListener('click', handleFacilityToggle));
 customVolume.addEventListener('input', handleCustomVolumeChange);
+customPoolName.addEventListener('input', () => {
+    customPoolName.removeAttribute('aria-invalid');
+    saveStatus.textContent = '';
+    if (readingsCustomPoolName &&
+        customPoolName.value.trim().toLocaleLowerCase() !== readingsCustomPoolName.toLocaleLowerCase()) {
+        clearPoolReadings();
+        calculate();
+    }
+});
 directionToggleButtons.forEach(btn => btn.addEventListener('click', handleDirectionToggle));
 calcButtons.forEach(btn => btn.addEventListener('click', handleCalcSelection));
 currentValue.addEventListener('input', handleInputChange);
 targetValue.addEventListener('input', handleInputChange);
+saveNote.addEventListener('click', saveCurrentNote);
+printNotes.addEventListener('click', () => window.print());
 
 // Add keyboard support for Enter key
 currentValue.addEventListener('keypress', (e) => {
@@ -173,6 +239,9 @@ targetValue.addEventListener('keypress', (e) => {
 function handleInputChange() {
     // Save to memory for current calculation
     if (state.selectedCalc) {
+        if (state.selectedPool === 'custom' && customPoolName.value.trim()) {
+            readingsCustomPoolName = customPoolName.value.trim();
+        }
         const baseName = getCalcBaseName(state.selectedCalc);
         state.inputMemory[baseName] = {
             current: currentValue.value,
@@ -192,6 +261,12 @@ attachPoolListeners();
 
 function handleFacilityToggle(e) {
     const facility = e.target.dataset.facility;
+    if (facility === state.facility) return;
+
+    state.facility = facility;
+    customVolume.value = '';
+    customPoolName.value = '';
+    customPoolName.removeAttribute('aria-invalid');
 
     // Update facility toggle active states
     facilityButtons.forEach(btn => btn.classList.remove('active'));
@@ -221,6 +296,13 @@ function handleFacilityToggle(e) {
 function handlePoolClick(e) {
     const value = e.target.dataset.pool;
     const parentGrid = e.target.closest('.calculation-grid');
+    const poolChanged = value !== state.selectedPool || state.facility !== state.selectedFacility;
+
+    if (poolChanged) {
+        clearPoolReadings();
+    }
+    state.selectedPool = value;
+    state.selectedFacility = state.facility;
 
     // Update button active states within the same grid
     parentGrid.querySelectorAll('[data-pool]').forEach(btn => btn.classList.remove('active'));
@@ -230,6 +312,7 @@ function handlePoolClick(e) {
         customVolumeGroup.classList.remove('hidden');
         poolVolume.style.display = 'none';
         state.poolType = 'custom';
+        state.poolVolume = customVolume.valueAsNumber;
     } else {
         customVolumeGroup.classList.add('hidden');
         poolVolume.style.display = 'block';
@@ -245,13 +328,24 @@ function handlePoolClick(e) {
         }
     }
 
-    calculate();
+    if (state.selectedCalc === 'cya-up' && state.facility !== 'cribpoint') {
+        resetCalculator();
+    } else {
+        if (state.selectedCalc) updateReadingLabels();
+        calculate();
+    }
 }
 
 function handleCustomVolumeChange(e) {
-    const value = parseInt(e.target.value) || 0;
-    state.poolVolume = value;
+    state.poolVolume = e.target.valueAsNumber;
     calculate();
+}
+
+function clearPoolReadings() {
+    state.inputMemory = {};
+    readingsCustomPoolName = '';
+    currentValue.value = '';
+    targetValue.value = '';
 }
 
 function handleDirectionToggle(e) {
@@ -324,19 +418,7 @@ function handleCalcSelection(e) {
         result.classList.remove('show', 'mismatch');
     }
 
-    // Update input labels based on calculation type
-    const isPH = baseName === 'ph';
-
-    // Get target range for this calculation type
-    let range = targetRanges[baseName];
-    if (baseName === 'chlorine') {
-        // Use pool-specific chlorine range
-        const poolConfig = pools[state.poolVolume];
-        range = poolConfig ? poolConfig.chlorineRange : '1-2.5 mg/L';
-    }
-
-    currentValueLabel.textContent = isPH ? 'Current' : 'Current (mg/L)';
-    targetValueLabel.textContent = `Target (${range})`;
+    updateReadingLabels();
 
     // Handle chemical options
     const calc = calculations[calcType];
@@ -352,6 +434,17 @@ function handleCalcSelection(e) {
     }
 
     calculate();
+}
+
+function updateReadingLabels() {
+    const baseName = getCalcBaseName(state.selectedCalc);
+    let range = targetRanges[baseName];
+    if (baseName === 'chlorine') {
+        const poolConfig = state.selectedPool === 'custom' ? null : pools[state.selectedPool];
+        range = poolConfig ? poolConfig.chlorineRange : 'check site procedure';
+    }
+    currentValueLabel.textContent = baseName === 'ph' ? 'Current' : 'Current (mg/L)';
+    targetValueLabel.textContent = `Target (${range})`;
 }
 
 function showChemicalOptions(options) {
@@ -377,6 +470,8 @@ function showChemicalOptions(options) {
 }
 
 function calculate() {
+    saveNote.classList.add('hidden');
+    saveStatus.textContent = '';
     if (!state.selectedCalc || !state.selectedChemical) {
         result.classList.remove('show', 'mismatch');
         return;
@@ -387,8 +482,17 @@ function calculate() {
         return;
     }
 
-    const current = parseFloat(currentValue.value);
-    const target = parseFloat(targetValue.value);
+    const current = currentValue.valueAsNumber;
+    const target = targetValue.valueAsNumber;
+
+    if (!Number.isFinite(state.poolVolume) || state.poolVolume <= 0) {
+        showMismatchMessage('Enter a pool volume greater than zero');
+        return;
+    }
+    if (!Number.isFinite(current) || !Number.isFinite(target) || current < 0 || target < 0) {
+        showMismatchMessage('Enter valid, non-negative readings');
+        return;
+    }
 
     // Check if direction matches the values
     const baseName = getCalcBaseName(state.selectedCalc);
@@ -409,7 +513,7 @@ function calculate() {
     const diff = Math.abs(target - current);
     const amount = (diff / ONE_MILLION) * state.poolVolume * state.selectedChemical.multiplier;
 
-    if (amount <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0) {
         result.classList.remove('show', 'mismatch');
         return;
     }
@@ -421,10 +525,13 @@ function calculate() {
     if (colorClass) {
         result.classList.add(colorClass);
     }
-    resultValue.textContent = amount.toFixed(2);
+    resultValue.textContent = amount < 0.01
+        ? amount.toLocaleString('en-AU', { maximumSignificantDigits: 3 })
+        : amount.toFixed(2);
     resultUnit.textContent = state.selectedChemical.unit;
     resultChemical.textContent = state.selectedChemical.chemical;
     result.classList.add('show');
+    saveNote.classList.remove('hidden');
 }
 
 function clearChemicalColors() {
@@ -453,8 +560,103 @@ function resetCalculator() {
     currentValue.value = '';
     targetValue.value = '';
     decreaseButton.classList.remove('hidden');
+    saveNote.classList.add('hidden');
+    saveStatus.textContent = '';
 }
 
 function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function saveCurrentNote() {
+    const visiblePools = state.facility === 'pelican' ? pelicanPools : cribpointPools;
+    const poolName = state.selectedPool === 'custom'
+        ? customPoolName.value.trim()
+        : visiblePools.querySelector('[data-pool].active').textContent.trim();
+
+    if (!poolName) {
+        customPoolName.setAttribute('aria-invalid', 'true');
+        saveStatus.textContent = 'Enter a custom pool name before saving.';
+        customPoolName.focus();
+        return;
+    }
+
+    const note = {
+        facilityId: state.facility,
+        facility: document.querySelector('[data-facility].active').textContent.trim(),
+        poolId: state.selectedPool,
+        poolName,
+        volume: state.poolVolume,
+        calculation: state.selectedCalc,
+        adjustment: calculations[state.selectedCalc].label,
+        amount: resultValue.textContent,
+        unit: resultUnit.textContent,
+        chemical: resultChemical.textContent,
+        savedAt: new Date().toISOString()
+    };
+    const existingIndex = savedNotes.findIndex((saved) =>
+        saved.facilityId === note.facilityId && saved.poolId === note.poolId &&
+        (note.poolId !== 'custom' || saved.poolName.toLocaleLowerCase() === note.poolName.toLocaleLowerCase()) &&
+        saved.calculation === note.calculation && saved.chemical === note.chemical
+    );
+    const nextNotes = savedNotes.slice();
+    if (existingIndex === -1) nextNotes.push(note);
+    else nextNotes[existingIndex] = note;
+
+    if (storeNotes(nextNotes)) {
+        if (state.selectedPool === 'custom') readingsCustomPoolName = poolName;
+        saveStatus.textContent = existingIndex === -1 ? 'Saved to notes.' : 'Updated in notes.';
+    } else {
+        saveStatus.textContent = 'Could not save. See the notes section below.';
+    }
+}
+
+function storeNotes(nextNotes) {
+    if (!notesAvailable) {
+        notesStatus.textContent = 'Notes are unavailable because saved notes could not be loaded.';
+        return false;
+    }
+    try {
+        localStorage.setItem(notesStorageKey, JSON.stringify(nextNotes));
+    } catch (error) {
+        notesStatus.textContent = 'Could not save notes on this device. Check your browser storage settings.';
+        return false;
+    }
+    savedNotes = nextNotes;
+    notesStatus.textContent = '';
+    renderNotes();
+    return true;
+}
+
+function renderNotes() {
+    notesList.replaceChildren();
+    notesEmpty.classList.toggle('hidden', savedNotes.length > 0 || !notesAvailable);
+    printNotes.classList.toggle('hidden', savedNotes.length === 0);
+
+    savedNotes.forEach((note, index) => {
+        const item = document.createElement('li');
+        item.className = 'note-item';
+
+        const pool = document.createElement('h3');
+        pool.className = 'note-pool';
+        pool.textContent = `${note.facility} · ${note.poolName}`;
+        const volume = document.createElement('p');
+        volume.className = 'note-meta';
+        volume.textContent = `${note.volume.toLocaleString('en-AU', { maximumFractionDigits: 20 })} L · ${note.adjustment}`;
+        const dose = document.createElement('p');
+        dose.className = 'note-dose';
+        dose.textContent = `${note.amount} ${note.unit} ${note.chemical}`;
+        const saved = document.createElement('p');
+        saved.className = 'note-meta';
+        saved.textContent = `Saved ${new Date(note.savedAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' })}`;
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'note-remove';
+        remove.textContent = 'Remove';
+        remove.setAttribute('aria-label', `Remove ${note.chemical} for ${note.facility}, ${note.poolName} from notes`);
+        remove.addEventListener('click', () => storeNotes(savedNotes.filter((_, i) => i !== index)));
+
+        item.append(pool, volume, dose, saved, remove);
+        notesList.appendChild(item);
+    });
 }
